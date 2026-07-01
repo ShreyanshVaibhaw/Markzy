@@ -533,6 +533,7 @@ dependencies = [
  "notify",
  "notify-debouncer-mini",
  "pulldown-cmark",
+ "regex",
  "serde",
  "serde_json",
  "tauri",
