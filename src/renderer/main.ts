@@ -2,6 +2,7 @@ import { createEditor, getMarkdown, getHTML, setMarkdown } from "./editor";
 import { applyTheme, loadSavedTheme } from "./themes/theme-manager";
 import { ipc } from "./ipc";
 import { setupTitlebar } from "./titlebar";
+import { listen } from "@tauri-apps/api/event";
 import "./themes/base.css";
 
 function isSlidesContent(content: string): boolean {
@@ -155,6 +156,15 @@ img{max-width:100%}
   });
 
   setupTitlebar(ipc);
+
+  listen<{ paths: string[] } | null>("tauri://drag-drop", async (event) => {
+    const paths = event.payload?.paths;
+    if (!paths || paths.length === 0) return;
+    const filePath = paths[0];
+    if (!filePath.endsWith(".md") && !filePath.endsWith(".markdown") && !filePath.endsWith(".mdown") && !filePath.endsWith(".mkd")) return;
+    const result = await ipc.openFilePath(filePath);
+    if (result) setContent(result.content);
+  });
 
   document.addEventListener("dragover", (e) => e.preventDefault());
   document.addEventListener("drop", (e) => e.preventDefault());
