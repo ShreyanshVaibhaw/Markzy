@@ -1,8 +1,11 @@
 {
-  "name": "colamd-scaffold",
+  "name": "colamd-tauri",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.5.0",
   "type": "module",
+  "description": "The Agent Native Markdown Editor - Tauri rebuild",
+  "author": "marswave.ai",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -11,6 +14,8 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-dialog": "^2",
+    "@tauri-apps/plugin-fs": "^2",
     "@tauri-apps/plugin-opener": "^2"
   },
   "devDependencies": {
