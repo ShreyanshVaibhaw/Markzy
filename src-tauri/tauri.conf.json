@@ -16,9 +16,9 @@
       {
         "title": "ColaMD",
         "width": 960,
-        "height": 640,
-        "minWidth": 480,
-        "minHeight": 360,
+        "height": 720,
+        "minWidth": 600,
+        "minHeight": 400,
         "resizable": true,
         "decorations": false,
         "transparent": false,

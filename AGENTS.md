@@ -90,9 +90,11 @@ Run these from the project root.
 Live agent sync (`watcher.rs`) is the reason this app exists. Requirements:
 
 - Detect external edits to the open file via `notify` (ReadDirectoryChangesW on Windows).
-- Debounce ~200ms; emit a `file-changed` event to the renderer with the freshly-read content on each settled change.
-- Maintain an activity state machine: `Idle` -> `Active` on first change -> `Settled` (~600ms after the last change) -> `Idle`. Emit `agent-active` on entering Active and `agent-idle` on entering Settled.
-- The renderer pulses the titlebar dot orange while Active and flashes green on Settled - match upstream's exact animation timing.
+- Debounce **100ms** (matching upstream); emit a `file-changed` event to the renderer with the freshly-read content on each settled change.
+- Maintain an activity state machine with **three states**: `Idle` -> `Active` on first change -> `Cooldown` (3s after last change) -> `Idle` (2s after entering Cooldown). Emit `agent-activity` with the state string (`'idle'`, `'active'`, `'cooldown'`) - the renderer sets the dot class accordingly.
+- The renderer pulses the titlebar dot orange (breathing animation) while Active, green while Cooldown, and gray/dim while Idle - match upstream's exact animation timing (`agent-breathe 2s ease-in-out infinite`).
+- Suppress watcher events during internal saves (set a flag, clear after 100ms) so saving from the editor does not trigger agent activity.
+- Resolve relative image paths to `file://` absolute URLs before sending content to the renderer.
 - Survive **atomic rewrites** (agents that write via temp file + rename): if `notify` reports remove-then-add on the watched path, re-acquire the watch and treat it as a change. Test this explicitly on Windows with a `Move-Item -Force` script.
 - The renderer must update content **without stealing focus or scroll position**.
 
