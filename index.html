@@ -1,20 +1,17 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="stylesheet" href="/src/styles/styles.css" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ColaMD</title>
-    <script type="module" src="/src/renderer/main.ts" defer></script>
-  </head>
-  <body>
-    <div id="titlebar" data-tauri-drag-region>
-      <span class="dot" id="activity-dot"></span>
-      <span class="title">ColaMD</span>
-    </div>
-    <main class="container">
-      <h1>ColaMD scaffold</h1>
-      <p id="status">Loading...</p>
-    </main>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ColaMD</title>
+  <script type="module" src="/src/renderer/main.ts" defer></script>
+</head>
+<body>
+  <div id="titlebar" data-tauri-drag-region>
+    <div id="agent-dot"></div>
+    <button id="slides-btn" title="Open as Slides">&#9654;</button>
+  </div>
+  <div id="editor"></div>
+  <textarea id="source-editor" spellcheck="false"></textarea>
+</body>
 </html>
