@@ -3,6 +3,16 @@ const themes: Record<string, string> = {
   dark: "theme-dark",
   elegant: "theme-elegant",
   newsprint: "theme-newsprint",
+  cappuccino: "theme-cappuccino",
+  nord: "theme-nord",
+  "solarized-light": "theme-solarized-light",
+  "solarized-dark": "theme-solarized-dark",
+  dracula: "theme-dracula",
+  "github-dark": "theme-github-dark",
+  "tokyo-night": "theme-tokyo-night",
+  gruvbox: "theme-gruvbox",
+  "catppuccin-mocha": "theme-catppuccin-mocha",
+  "one-dark": "theme-one-dark",
 };
 
 let customStyleEl: HTMLStyleElement | null = null;

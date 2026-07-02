@@ -41,6 +41,7 @@ export interface MarkzyAPI {
   onSetCustomCSS: (callback: (css: string) => void) => void;
   onMenuImportTheme: (callback: () => void) => void;
   onMenuExportSlides: (callback: () => void) => void;
+  onMenuCloseTab: (callback: () => void) => void;
   onAgentActivity: (callback: (state: AgentState) => void) => void;
 }
 
@@ -106,5 +107,8 @@ export const ipc: MarkzyAPI = {
   },
   onAgentActivity: (callback) => {
     listen("agent-activity", (event) => callback(event.payload as AgentState));
+  },
+  onMenuCloseTab: (callback) => {
+    listen("menu-close-tab", () => callback());
   },
 };

@@ -39,25 +39,28 @@ fn emit_to_main_with_payload<R: Runtime, S: serde::Serialize + Clone>(
 fn build_theme_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> {
     let submenu = Submenu::new(app, "Theme", true)?;
 
-    let light = MenuItem::with_id(app, "theme-light", "Light", true, None::<&str>)?;
-    let dark = MenuItem::with_id(app, "theme-dark", "Dark", true, None::<&str>)?;
-    let elegant = MenuItem::with_id(app, "theme-elegant", "Elegant", true, None::<&str>)?;
-    let newsprint = MenuItem::with_id(app, "theme-newsprint", "Newsprint", true, None::<&str>)?;
-    let sep1 = PredefinedMenuItem::separator(app)?;
-    let import_theme = MenuItem::with_id(
-        app,
-        "menu-import-theme",
-        "Import Theme...",
-        true,
-        None::<&str>,
-    )?;
-
-    let mut items: Vec<Box<dyn IsMenuItem<R>>> = vec![
-        Box::new(light),
-        Box::new(dark),
-        Box::new(elegant),
-        Box::new(newsprint),
+    let theme_names = [
+        ("theme-light", "Light"),
+        ("theme-dark", "Dark"),
+        ("theme-elegant", "Elegant"),
+        ("theme-newsprint", "Newsprint"),
+        ("theme-cappuccino", "Cappuccino"),
+        ("theme-nord", "Nord"),
+        ("theme-solarized-light", "Solarized Light"),
+        ("theme-solarized-dark", "Solarized Dark"),
+        ("theme-dracula", "Dracula"),
+        ("theme-github-dark", "GitHub Dark"),
+        ("theme-tokyo-night", "Tokyo Night"),
+        ("theme-gruvbox", "Gruvbox"),
+        ("theme-catppuccin-mocha", "Catppuccin Mocha"),
+        ("theme-one-dark", "One Dark"),
     ];
+
+    let mut items: Vec<Box<dyn IsMenuItem<R>>> = Vec::new();
+    for (id, label) in theme_names {
+        let item = MenuItem::with_id(app, id, label, true, None::<&str>)?;
+        items.push(Box::new(item));
+    }
 
     let custom_names = theme::list_custom_theme_names();
     if !custom_names.is_empty() {
@@ -70,6 +73,14 @@ fn build_theme_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>>
         }
     }
 
+    let sep1 = PredefinedMenuItem::separator(app)?;
+    let import_theme = MenuItem::with_id(
+        app,
+        "menu-import-theme",
+        "Import Theme...",
+        true,
+        None::<&str>,
+    )?;
     items.push(Box::new(sep1));
     items.push(Box::new(import_theme));
 
@@ -99,6 +110,13 @@ fn build_file_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> 
         "Save As...",
         true,
         Some("CommandOrCtrl+Shift+S"),
+    )?;
+    let close_tab = MenuItem::with_id(
+        app,
+        "menu-close-tab",
+        "Close Tab",
+        true,
+        Some("CommandOrCtrl+W"),
     )?;
     let sep2 = PredefinedMenuItem::separator(app)?;
     let export_pdf =
@@ -144,6 +162,7 @@ fn build_file_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> 
         &sep1,
         &save,
         &save_as,
+        &close_tab,
         &sep2,
         &export_pdf,
         &export_html,
@@ -277,7 +296,7 @@ fn handle_menu_event<R: Runtime>(app: &AppHandle<R>, id: &str) {
     }
 
     match id {
-        "theme-light" | "theme-dark" | "theme-elegant" | "theme-newsprint" => {
+        id if id.starts_with("theme-") => {
             let theme = id.strip_prefix("theme-").unwrap_or("light");
             emit_to_main_with_payload(app, "set-theme", theme.to_string());
         }
@@ -286,6 +305,7 @@ fn handle_menu_event<R: Runtime>(app: &AppHandle<R>, id: &str) {
         "menu-open" => emit_to_main(app, "menu-open"),
         "menu-save" => emit_to_main(app, "menu-save"),
         "menu-save-as" => emit_to_main(app, "menu-save-as"),
+        "menu-close-tab" => emit_to_main(app, "menu-close-tab"),
         "menu-new-slides" => emit_to_main(app, "menu-new-slides"),
         "menu-open-as-slides" => emit_to_main(app, "menu-open-as-slides"),
         "menu-export-pdf" => emit_to_main(app, "menu-export-pdf"),

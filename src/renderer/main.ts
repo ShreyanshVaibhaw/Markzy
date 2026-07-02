@@ -3,6 +3,18 @@ import { applyTheme, loadSavedTheme } from "./themes/theme-manager";
 import { ipc } from "./ipc";
 import { setupTitlebar } from "./titlebar";
 import { listen } from "@tauri-apps/api/event";
+import {
+  createTab,
+  closeTab,
+  switchToTab,
+  getActiveTab,
+  updateActiveTabFilePath,
+  markActiveTabClean,
+  setActiveTabSlides,
+  getActiveTabContent,
+  ensureTab,
+  getTabForPath,
+} from "./tabs";
 import "./themes/base.css";
 
 function isSlidesContent(content: string): boolean {
@@ -21,6 +33,7 @@ function enterSourceMode(content: string): void {
   ta.classList.add("visible");
   ta.value = content;
   slidesBtnEl().classList.add("visible");
+  setActiveTabSlides(true);
 }
 
 function exitSourceMode(): void {
@@ -28,6 +41,7 @@ function exitSourceMode(): void {
   editorEl().classList.remove("hidden");
   sourceEl().classList.remove("visible");
   slidesBtnEl().classList.remove("visible");
+  setActiveTabSlides(false);
 }
 
 function setContent(content: string): void {
@@ -42,6 +56,29 @@ function setContent(content: string): void {
 function getContent(): string {
   if (sourceModeActive) return sourceEl().value;
   return getMarkdown();
+}
+
+function saveActiveTabState(): void {
+  const tab = getActiveTab();
+  if (!tab) return;
+  if (sourceModeActive) {
+    tab.content = sourceEl().value;
+  } else {
+    tab.content = getMarkdown();
+    tab.dirty = true;
+  }
+  tab.isSlides = sourceModeActive;
+}
+
+function loadTabContent(): void {
+  const tab = getActiveTab();
+  if (!tab) return;
+  if (tab.isSlides) {
+    enterSourceMode(tab.content);
+  } else {
+    exitSourceMode();
+    setMarkdown(tab.content);
+  }
 }
 
 async function init(): Promise<void> {
@@ -60,11 +97,32 @@ async function init(): Promise<void> {
 
   ipc.onMenuOpen(async () => {
     const result = await ipc.openFile();
-    if (result) setContent(result.content);
+    if (!result) return;
+
+    const tab = getActiveTab();
+    if (tab && !tab.filePath && !tab.dirty && tab.content === "") {
+      updateActiveTabFilePath(result.path);
+      setContent(result.content);
+    } else {
+      createTab(result.path, result.content);
+      loadTabContent();
+    }
   });
 
-  ipc.onMenuSave(() => ipc.saveFile(getContent()));
-  ipc.onMenuSaveAs(() => ipc.saveFileAs(getContent()));
+  ipc.onMenuSave(async () => {
+    saveActiveTabState();
+    const content = getActiveTabContent();
+    const ok = await ipc.saveFile(content);
+    if (ok) markActiveTabClean();
+  });
+
+  ipc.onMenuSaveAs(async () => {
+    saveActiveTabState();
+    const content = getActiveTabContent();
+    const ok = await ipc.saveFileAs(content);
+    if (ok) markActiveTabClean();
+  });
+
   ipc.onMenuExportPDF(() => ipc.exportPDF());
   ipc.onMenuExportHTML(() => {
     const s = getComputedStyle(document.body);
@@ -83,7 +141,9 @@ async function init(): Promise<void> {
     const selectionBg = v("--selection-bg");
 
     const editor = document.querySelector("#editor .ProseMirror");
-    const fontFamily = editor ? getComputedStyle(editor).fontFamily : "-apple-system,BlinkMacSystemFont,sans-serif";
+    const fontFamily = editor
+      ? getComputedStyle(editor).fontFamily
+      : "-apple-system,BlinkMacSystemFont,sans-serif";
 
     const getElColor = (selector: string, fallback: string): string => {
       const el = document.querySelector(`#editor .ProseMirror ${selector}`);
@@ -117,10 +177,23 @@ img{max-width:100%}
   });
 
   ipc.onNewFile(() => {
+    saveActiveTabState();
+    createTab();
     exitSourceMode();
     setMarkdown("");
   });
-  ipc.onFileOpened((data) => setContent(data.content));
+
+  ipc.onMenuCloseTab(() => {
+    saveActiveTabState();
+    closeTab(ensureTab().id);
+    loadTabContent();
+  });
+
+  ipc.onFileOpened((data) => {
+    updateActiveTabFilePath(data.path);
+    setContent(data.content);
+  });
+
   ipc.onFileChanged((content) => {
     if (sourceModeActive) {
       sourceEl().value = content;
@@ -128,6 +201,7 @@ img{max-width:100%}
       setMarkdown(content);
     }
   });
+
   ipc.onSetTheme((theme) => applyTheme(theme));
   ipc.onSetCustomCSS((css) => {
     const theme = loadSavedTheme();
@@ -139,15 +213,19 @@ img{max-width:100%}
   });
 
   ipc.onNewSlidesContent((content) => {
+    createTab(null, content, true);
     enterSourceMode(content);
   });
 
   ipc.onMenuOpenAsSlides(async () => {
-    await ipc.openAsSlides(getContent());
+    saveActiveTabState();
+    const tab = getActiveTab();
+    if (tab) await ipc.openAsSlides(tab.content);
   });
 
   ipc.onMenuExportSlides(async () => {
-    await ipc.exportSlides(getContent());
+    saveActiveTabState();
+    await ipc.exportSlides(getActiveTabContent());
   });
 
   ipc.onMenuImportTheme(async () => {
@@ -161,13 +239,31 @@ img{max-width:100%}
     const paths = event.payload?.paths;
     if (!paths || paths.length === 0) return;
     const filePath = paths[0];
-    if (!filePath.endsWith(".md") && !filePath.endsWith(".markdown") && !filePath.endsWith(".mdown") && !filePath.endsWith(".mkd")) return;
+    if (
+      !filePath.endsWith(".md") &&
+      !filePath.endsWith(".markdown") &&
+      !filePath.endsWith(".mdown") &&
+      !filePath.endsWith(".mkd")
+    )
+      return;
+    const existing = getTabForPath(filePath);
+    if (existing) {
+      saveActiveTabState();
+      switchToTab(existing.id);
+      loadTabContent();
+      return;
+    }
     const result = await ipc.openFilePath(filePath);
-    if (result) setContent(result.content);
+    if (!result) return;
+    createTab(result.path, result.content);
+    loadTabContent();
   });
 
   document.addEventListener("dragover", (e) => e.preventDefault());
   document.addEventListener("drop", (e) => e.preventDefault());
+
+  createTab();
+  loadTabContent();
 }
 
 init().catch((e) => console.error("Markzy init failed:", e));
