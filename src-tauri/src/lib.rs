@@ -382,6 +382,13 @@ pub fn run() {
             let menu = build_menu(_app.handle())?;
             _app.set_menu(menu)?;
         }
+
+        if let Some(window) = _app.get_webview_window("main") {
+            if let Some(icon) = _app.default_window_icon().cloned() {
+                let _ = window.set_icon(icon);
+            }
+        }
+
         Ok(())
     });
 
