@@ -43,6 +43,8 @@ export interface MarkzyAPI {
   onMenuExportSlides: (callback: () => void) => void;
   onMenuCloseTab: (callback: () => void) => void;
   onAgentActivity: (callback: (state: AgentState) => void) => void;
+  stopWatch: () => void;
+  watchFile: (path: string) => void;
 }
 
 export const ipc: MarkzyAPI = {
@@ -110,5 +112,11 @@ export const ipc: MarkzyAPI = {
   },
   onMenuCloseTab: (callback) => {
     listen("menu-close-tab", () => callback());
+  },
+  stopWatch: () => {
+    invoke("stop_watch");
+  },
+  watchFile: (path: string) => {
+    invoke("watch_file", { path });
   },
 };

@@ -12,7 +12,7 @@ use crate::commands::resolve_image_paths;
 pub struct WatcherState {
     pub file_path: Arc<Mutex<Option<String>>>,
     pub is_internal_save: Arc<AtomicBool>,
-    pub task_handle: Mutex<Option<tokio::task::JoinHandle<()>>>,
+    pub     task_handle: Mutex<Option<tauri::async_runtime::JoinHandle<()>>>,
 }
 
 impl WatcherState {
@@ -50,7 +50,7 @@ pub fn start_watcher(app: &AppHandle, state: &WatcherState, path: &str) {
     let file_path_arc = Arc::clone(&state.file_path);
     let is_internal_save = Arc::clone(&state.is_internal_save);
 
-    let handle = tokio::spawn(async move {
+    let handle = tauri::async_runtime::spawn(async move {
         let target = match file_path_arc.lock().unwrap().as_ref() {
             Some(p) => PathBuf::from(p),
             None => return,
@@ -84,7 +84,7 @@ pub fn start_watcher(app: &AppHandle, state: &WatcherState, path: &str) {
             return;
         }
 
-        let mut timer_handle: Option<tokio::task::JoinHandle<()>> = None;
+        let mut timer_handle: Option<tauri::async_runtime::JoinHandle<()>> = None;
         let is_active = Arc::new(AtomicBool::new(false));
 
         while rx.recv().await.is_some() {
@@ -111,7 +111,7 @@ pub fn start_watcher(app: &AppHandle, state: &WatcherState, path: &str) {
 
             let app_clone = app_handle.clone();
             let active_clone = Arc::clone(&is_active);
-            timer_handle = Some(tokio::spawn(async move {
+            timer_handle = Some(tauri::async_runtime::spawn(async move {
                 tokio::time::sleep(Duration::from_secs(3)).await;
                 let _ = app_clone.emit("agent-activity", "cooldown");
                 tokio::time::sleep(Duration::from_secs(2)).await;

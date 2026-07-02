@@ -97,7 +97,7 @@ pub async fn open_as_slides(
 
     let actual_port = listener.local_addr().map_err(|e| e.to_string())?.port();
 
-    tokio::spawn(async move {
+    tauri::async_runtime::spawn(async move {
         let _ = axum::serve(listener, router).await;
     });
 

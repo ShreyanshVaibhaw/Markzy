@@ -2,6 +2,7 @@ import { createEditor, getMarkdown, getHTML, setMarkdown } from "./editor";
 import { applyTheme, loadSavedTheme } from "./themes/theme-manager";
 import { ipc } from "./ipc";
 import { setupTitlebar } from "./titlebar";
+import { initMenuBar, registerEditorFns } from "./menubar";
 import { listen } from "@tauri-apps/api/event";
 import {
   createTab,
@@ -14,6 +15,7 @@ import {
   getActiveTabContent,
   ensureTab,
   getTabForPath,
+  onTabSwitch,
 } from "./tabs";
 import "./themes/base.css";
 
@@ -265,5 +267,26 @@ img{max-width:100%}
   createTab();
   loadTabContent();
 }
+
+onTabSwitch((prev, next) => {
+  if (prev && prev.id !== next.id) {
+    saveActiveTabState();
+  }
+  loadTabContent();
+  if (prev?.filePath) {
+    ipc.stopWatch();
+  }
+  if (next.filePath) {
+    ipc.watchFile(next.filePath);
+  }
+});
+
+initMenuBar();
+registerEditorFns({
+  setContent,
+  saveTabState: saveActiveTabState,
+  exitSourceMode,
+  loadTabContent,
+});
 
 init().catch((e) => console.error("Markzy init failed:", e));

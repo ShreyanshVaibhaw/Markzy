@@ -215,7 +215,7 @@ pub fn save_file(
     update_title(&app, Some(&save_path));
 
     let flag = Arc::clone(&state.is_internal_save);
-    tokio::spawn(async move {
+    tauri::async_runtime::spawn(async move {
         tokio::time::sleep(Duration::from_millis(100)).await;
         flag.store(false, Ordering::Relaxed);
     });
@@ -266,7 +266,7 @@ pub fn save_file_as(
     update_title(&app, Some(&save_path));
 
     let flag = Arc::clone(&state.is_internal_save);
-    tokio::spawn(async move {
+    tauri::async_runtime::spawn(async move {
         tokio::time::sleep(Duration::from_millis(100)).await;
         flag.store(false, Ordering::Relaxed);
     });

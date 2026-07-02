@@ -91,6 +91,79 @@ html, body {
   background: rgba(128, 128, 128, 0.2);
 }
 
+#menubar {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  gap: 0;
+  padding-left: 8px;
+  -webkit-app-region: no-drag;
+}
+
+.menubar-btn {
+  height: 100%;
+  padding: 0 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text-color);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  opacity: 0.85;
+}
+
+.menubar-btn:hover,
+.menubar-btn.open {
+  background: rgba(128, 128, 128, 0.15);
+  opacity: 1;
+}
+
+.menu-dropdown {
+  position: fixed;
+  z-index: 1000;
+  min-width: 220px;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 5px;
+  cursor: pointer;
+  color: var(--text-color);
+  white-space: nowrap;
+}
+
+.menu-item:hover {
+  background: var(--link-color);
+  color: #fff;
+}
+
+.menu-accel {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: 48px;
+}
+
+.menu-item:hover .menu-accel {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.menu-separator {
+  height: 1px;
+  background: var(--border-color);
+  margin: 4px 8px;
+}
+
 #agent-dot {
   position: absolute;
   top: 22px;

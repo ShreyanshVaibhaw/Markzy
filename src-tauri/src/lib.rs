@@ -20,12 +20,14 @@ const PLATFORM: Platform = Platform::Mac;
 #[cfg(not(target_os = "macos"))]
 const PLATFORM: Platform = Platform::Other;
 
+#[allow(dead_code)]
 fn emit_to_main<R: Runtime>(app: &AppHandle<R>, event: &str) {
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.emit(event, ());
     }
 }
 
+#[allow(dead_code)]
 fn emit_to_main_with_payload<R: Runtime, S: serde::Serialize + Clone>(
     app: &AppHandle<R>,
     event: &str,
@@ -36,6 +38,7 @@ fn emit_to_main_with_payload<R: Runtime, S: serde::Serialize + Clone>(
     }
 }
 
+#[allow(dead_code)]
 fn build_theme_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> {
     let submenu = Submenu::new(app, "Theme", true)?;
 
@@ -90,6 +93,7 @@ fn build_theme_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>>
     Ok(submenu)
 }
 
+#[allow(dead_code)]
 fn build_file_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> {
     let submenu = Submenu::new(app, "File", true)?;
 
@@ -176,6 +180,7 @@ fn build_file_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> 
     Ok(submenu)
 }
 
+#[allow(dead_code)]
 fn build_edit_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> {
     let submenu = Submenu::new(app, "Edit", true)?;
 
@@ -193,6 +198,7 @@ fn build_edit_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> 
     Ok(submenu)
 }
 
+#[allow(dead_code)]
 fn build_view_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> {
     let submenu = Submenu::new(app, "View", true)?;
 
@@ -232,6 +238,7 @@ fn build_view_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> 
     Ok(submenu)
 }
 
+#[allow(dead_code)]
 fn build_help_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> {
     let submenu = Submenu::new(app, "Help", true)?;
     let about = MenuItem::with_id(app, "menu-about", "About Markzy", true, None::<&str>)?;
@@ -257,6 +264,7 @@ fn build_app_menu_mac<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R
     Ok(submenu)
 }
 
+#[allow(dead_code)]
 fn build_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
     let file_menu = build_file_menu(app)?;
     let edit_menu = build_edit_menu(app)?;
@@ -282,6 +290,7 @@ fn build_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
     }
 }
 
+#[allow(dead_code)]
 fn handle_menu_event<R: Runtime>(app: &AppHandle<R>, id: &str) {
     if let Some(rest) = id.strip_prefix("theme-custom:") {
         let file_name = format!("{}.css", rest);
@@ -353,19 +362,30 @@ fn handle_menu_event<R: Runtime>(app: &AppHandle<R>, id: &str) {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    #[allow(unused_mut)]
+    let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_opener::init())
-        .manage(WatcherState::new())
-        .on_menu_event(|app, event| {
+        .manage(WatcherState::new());
+
+    #[cfg(target_os = "macos")]
+    {
+        builder = builder.on_menu_event(|app, event| {
             handle_menu_event(app, event.id().as_ref());
-        })
-        .setup(|app| {
-            let menu = build_menu(app.handle())?;
-            app.set_menu(menu)?;
+        });
+    }
+
+    builder = builder.setup(|_app| {
+            #[cfg(target_os = "macos")]
+            {
+                let menu = build_menu(_app.handle())?;
+                _app.set_menu(menu)?;
+            }
             Ok(())
-        })
+        });
+
+    builder
         .invoke_handler(tauri::generate_handler![
             commands::open_file,
             commands::open_file_path,

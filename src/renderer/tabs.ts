@@ -10,6 +10,11 @@ export interface Tab {
 let tabs: Tab[] = [];
 let activeTabId: string = "";
 let tabCounter = 0;
+let tabSwitchCallbacks: Array<(prev: Tab | null, next: Tab) => void> = [];
+
+export function onTabSwitch(cb: (prev: Tab | null, next: Tab) => void): void {
+  tabSwitchCallbacks.push(cb);
+}
 
 const TAB_BAR_ID = "tab-bar";
 
@@ -91,6 +96,9 @@ export function switchToTab(tabId: string): [Tab | null, Tab] {
 
   activeTabId = tabId;
   renderTabBar();
+  for (const cb of tabSwitchCallbacks) {
+    cb(prevTab, nextTab);
+  }
   return [prevTab, nextTab];
 }
 
