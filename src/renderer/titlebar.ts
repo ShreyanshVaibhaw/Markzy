@@ -7,6 +7,22 @@ export function setupTitlebar(ipc: MarkzyAPI): void {
     if (agentDot) agentDot.className = state === "idle" ? "" : state;
   });
 
+  const titlebar = document.getElementById("titlebar");
+  if (titlebar) {
+    titlebar.addEventListener("mousedown", (e) => {
+      const target = e.target as HTMLElement;
+      if (
+        target.closest(".menubar-btn") ||
+        target.closest(".win-dot") ||
+        target.closest("#slides-btn") ||
+        target.closest("#agent-dot")
+      ) {
+        return;
+      }
+      getCurrentWindow().startDragging();
+    });
+  }
+
   const winBtnMin = document.querySelector(".win-minimize") as HTMLButtonElement | null;
   const winBtnMax = document.querySelector(".win-maximize") as HTMLButtonElement | null;
   const winBtnClose = document.querySelector(".win-close") as HTMLButtonElement | null;
