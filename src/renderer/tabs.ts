@@ -45,9 +45,20 @@ function renderTabBar(): void {
     el.addEventListener("click", () => switchToTab(tab.id));
     bar.appendChild(el);
   });
+
+  const newBtn = document.createElement("span");
+  newBtn.className = "tab-new";
+  newBtn.textContent = "+";
+  newBtn.title = "New Tab (Ctrl+N)";
+  newBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    createTab();
+  });
+  bar.appendChild(newBtn);
 }
 
 export function createTab(filePath?: string | null, content?: string, isSlides?: boolean): Tab {
+  const prevTab = getActiveTab();
   const tab: Tab = {
     id: generateTabId(),
     filePath: filePath ?? null,
@@ -59,6 +70,9 @@ export function createTab(filePath?: string | null, content?: string, isSlides?:
   tabs.push(tab);
   activeTabId = tab.id;
   renderTabBar();
+  for (const cb of tabSwitchCallbacks) {
+    cb(prevTab, tab);
+  }
   return tab;
 }
 

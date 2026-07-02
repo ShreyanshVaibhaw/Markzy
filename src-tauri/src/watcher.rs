@@ -12,7 +12,7 @@ use crate::commands::resolve_image_paths;
 pub struct WatcherState {
     pub file_path: Arc<Mutex<Option<String>>>,
     pub is_internal_save: Arc<AtomicBool>,
-    pub     task_handle: Mutex<Option<tauri::async_runtime::JoinHandle<()>>>,
+    pub task_handle: Mutex<Option<tauri::async_runtime::JoinHandle<()>>>,
 }
 
 impl WatcherState {

@@ -189,8 +189,8 @@ function getThemeItems(): Array<{ label: string; separator?: boolean; action?: (
 export function initMenuBar(): void {
   if (isMac) return;
 
-  const titlebar = document.getElementById("titlebar");
-  if (!titlebar) return;
+  const slot = document.getElementById("menubar-slot");
+  if (!slot) return;
 
   const container = document.createElement("div");
   container.id = "menubar";
@@ -330,12 +330,7 @@ export function initMenuBar(): void {
     container.appendChild(btn);
   });
 
-  const firstChild = titlebar.firstElementChild;
-  if (firstChild) {
-    titlebar.insertBefore(container, firstChild);
-  } else {
-    titlebar.appendChild(container);
-  }
+  slot.appendChild(container);
 
   document.addEventListener("click", (e) => {
     if (

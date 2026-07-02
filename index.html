@@ -7,9 +7,16 @@
   <script type="module" src="/src/renderer/main.ts" defer></script>
 </head>
 <body>
-  <div id="titlebar" data-tauri-drag-region>
-    <div id="agent-dot"></div>
+  <div id="titlebar">
+    <div id="menubar-slot"></div>
+    <div class="titlebar-spacer" data-tauri-drag-region></div>
     <button id="slides-btn" title="Open as Slides">&#9654;</button>
+    <div id="agent-dot"></div>
+    <div id="win-controls">
+      <button class="win-dot win-minimize" title="Minimize"></button>
+      <button class="win-dot win-maximize" title="Maximize"></button>
+      <button class="win-dot win-close" title="Close"></button>
+    </div>
   </div>
   <nav id="tab-bar"></nav>
   <div id="editor"></div>

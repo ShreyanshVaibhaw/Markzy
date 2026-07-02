@@ -377,13 +377,13 @@ pub fn run() {
     }
 
     builder = builder.setup(|_app| {
-            #[cfg(target_os = "macos")]
-            {
-                let menu = build_menu(_app.handle())?;
-                _app.set_menu(menu)?;
-            }
-            Ok(())
-        });
+        #[cfg(target_os = "macos")]
+        {
+            let menu = build_menu(_app.handle())?;
+            _app.set_menu(menu)?;
+        }
+        Ok(())
+    });
 
     builder
         .invoke_handler(tauri::generate_handler![
