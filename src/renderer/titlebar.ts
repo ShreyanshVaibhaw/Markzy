@@ -15,11 +15,30 @@ export function setupTitlebar(ipc: MarkzyAPI): void {
         target.closest(".menubar-btn") ||
         target.closest(".win-dot") ||
         target.closest("#slides-btn") ||
+        target.closest("#agent-dot") ||
+        target.closest("#app-logo")
+      ) {
+        return;
+      }
+      if (e.detail === 2) return;
+      getCurrentWindow().startDragging();
+    });
+
+    titlebar.addEventListener("dblclick", (e) => {
+      const target = e.target as HTMLElement;
+      if (
+        target.closest(".menubar-btn") ||
+        target.closest(".win-dot") ||
+        target.closest("#slides-btn") ||
         target.closest("#agent-dot")
       ) {
         return;
       }
-      getCurrentWindow().startDragging();
+      const win = getCurrentWindow();
+      win.isMaximized().then((maximized) => {
+        if (maximized) win.unmaximize();
+        else win.maximize();
+      });
     });
   }
 
