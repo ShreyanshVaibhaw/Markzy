@@ -29,9 +29,9 @@ export function applyTheme(name: string, customCSS?: string): void {
     body.classList.add(themes[name]);
   }
 
-  localStorage.setItem("colamd-theme", name);
+  localStorage.setItem("markzy-theme", name);
 }
 
 export function loadSavedTheme(): string {
-  return localStorage.getItem("colamd-theme") || "elegant";
+  return localStorage.getItem("markzy-theme") || "elegant";
 }

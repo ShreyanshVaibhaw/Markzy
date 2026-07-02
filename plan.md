@@ -1,7 +1,7 @@
-# ColaMD-Tauri Build Plan
+# Markzy Build Plan
 
 > Source project: https://github.com/marswaveai/ColaMD (Electron + Milkdown + TypeScript)
-> Target project: ColaMD-Tauri (Tauri 2 + Rust + WebView2 + Milkdown renderer reused)
+> Target project: Markzy (Tauri 2 + Rust + WebView2 + Milkdown renderer reused)
 > Goal: Feature-parity rebuild that is ~10x lighter on memory and fast on Windows, still cross-platform.
 
 This file is a sequence of self-contained prompts. An AI agent should execute them **in order, one at a time**, completing each phase (including verification) before starting the next. Do not skip phases. Do not merge phases. Each phase ends with a "Done when" checklist - every box must be ticked before moving on.
@@ -39,21 +39,21 @@ This file is a sequence of self-contained prompts. An AI agent should execute th
 
 ### Prompt
 
-You are starting the ColaMD-Tauri rebuild. The working directory is empty.
+You are starting the Markzy rebuild. The working directory is empty.
 
 1. Verify prerequisites: run `cargo --version`, `rustc --version`, `node --version`, `npm --version`. On Windows also confirm WebView2 runtime is present (it ships with Win10/11). Report any missing tooling and stop if Rust or Node is absent.
-2. Scaffold a Tauri 2 app in the current directory using `npm create tauri-app@latest` with these answers: project name `colamd-tauri`, identifier `com.marswave.colamd`, frontend `TypeScript + Vite (vanilla)`, package manager `npm`. If the scaffolder creates a subfolder, move its contents up into the working directory root so `package.json` and `src-tauri/` sit at the root.
-3. Update `package.json`: set `"name": "colamd-tauri"`, `"version": "1.5.0"`, `"description": "The Agent Native Markdown Editor - Tauri rebuild"`, `"author": "marswave.ai"`, `"license": "MIT"`. Keep the Tauri scripts.
-4. In `src-tauri/Cargo.toml` set `name = "colamd_tauri"`, `version = "1.5.0"`, `edition = "2021"`. Add these dependencies (use current 2.x versions, run `cargo add` to pin): `tauri` (with features `["devtools", "macos-private-api"]` for dev only), `serde = { version = "1", features = ["derive"] }`, `serde_json = "1"`, `notify = "6"`, `notify-debouncer-mini = "0.4"`, `pulldown-cmark = "0.10"`, `base64 = "0.22"`, `dirs = "5"`, `uuid = { version = "1", features = ["v4"] }`, `tokio = { version = "1", features = ["full"] }`, `axum = "0.7"`, `tower = "0.4"`, `tower-http = { version = "0.5", features = ["fs"] }`, `chrono = "0.4"`. Also add Tauri plugins via `cargo add`: `tauri-plugin-dialog`, `tauri-plugin-fs`, `tauri-plugin-opener` (match the Tauri 2 version family).
+2. Scaffold a Tauri 2 app in the current directory using `npm create tauri-app@latest` with these answers: project name `markzy`, identifier `com.shreyanshvaibhaw.markzy`, frontend `TypeScript + Vite (vanilla)`, package manager `npm`. If the scaffolder creates a subfolder, move its contents up into the working directory root so `package.json` and `src-tauri/` sit at the root.
+3. Update `package.json`: set `"name": "markzy"`, `"version": "1.5.0"`, `"description": "The Agent Native Markdown Editor - Markzy"`, `"author": "marswave.ai"`, `"license": "MIT"`. Keep the Tauri scripts.
+4. In `src-tauri/Cargo.toml` set `name = "markzy"`, `version = "1.5.0"`, `edition = "2021"`. Add these dependencies (use current 2.x versions, run `cargo add` to pin): `tauri` (with features `["devtools", "macos-private-api"]` for dev only), `serde = { version = "1", features = ["derive"] }`, `serde_json = "1"`, `notify = "6"`, `notify-debouncer-mini = "0.4"`, `pulldown-cmark = "0.10"`, `base64 = "0.22"`, `dirs = "5"`, `uuid = { version = "1", features = ["v4"] }`, `tokio = { version = "1", features = ["full"] }`, `axum = "0.7"`, `tower = "0.4"`, `tower-http = { version = "0.5", features = ["fs"] }`, `chrono = "0.4"`. Also add Tauri plugins via `cargo add`: `tauri-plugin-dialog`, `tauri-plugin-fs`, `tauri-plugin-opener` (match the Tauri 2 version family).
 5. Configure `src-tauri/tauri.conf.json`:
-   - `productName`: `ColaMD`
-   - `identifier`: `com.marswave.colamd`
-   - `app.windows[0]`: `title` "ColaMD", `width` 960, `height` 640, `minWidth` 480, `minHeight` 360, `resizable` true, `decorations` false (frameless - we ship a custom titlebar), `transparent` false, `center` true.
+   - `productName`: `Markzy`
+   - `identifier`: `com.shreyanshvaibhaw.markzy`
+   - `app.windows[0]`: `title` "Markzy", `width` 960, `height` 640, `minWidth` 480, `minHeight` 360, `resizable` true, `decorations` false (frameless - we ship a custom titlebar), `transparent` false, `center` true.
    - `app.security.csp`: start permissive for dev (`"default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'"`) and tighten in Phase 6.
    - `bundle.active`: true, `bundle.targets`: `["msi","nsis","dmg","appimage","deb"]`, `bundle.icon`: point at placeholder icons in `src-tauri/icons/` (you can generate defaults with `npm run tauri icon` later).
    - `bundle.appAssociations` (macOS/Linux) and Windows file associations: register `.md` and `.markdown`.
-6. Replace the scaffolded `src/` (renderer) with an empty placeholder for now - we port the real renderer in Phase 2. Keep a minimal `index.html` + `main.ts` that just renders "ColaMD scaffold" so the app boots.
-7. Write a minimal `src-tauri/src/main.rs` that initializes Tauri with the dialog, fs, and opener plugins, and a single `greet` command returning `"colamd-tauri ready"`. Wire it so the placeholder renderer calls it on load and logs the result.
+6. Replace the scaffolded `src/` (renderer) with an empty placeholder for now - we port the real renderer in Phase 2. Keep a minimal `index.html` + `main.ts` that just renders "Markzy scaffold" so the app boots.
+7. Write a minimal `src-tauri/src/main.rs` that initializes Tauri with the dialog, fs, and opener plugins, and a single `greet` command returning `"markzy ready"`. Wire it so the placeholder renderer calls it on load and logs the result.
 8. Run `npm install`, then `npm run tauri dev`. Confirm the frameless window opens and the placeholder text renders. Run `cargo fmt` and `cargo clippy -- -D warnings` in `src-tauri/` and fix everything.
 9. Create this directory structure (empty files OK, to be filled in later phases):
    ```
@@ -62,11 +62,11 @@ You are starting the ColaMD-Tauri rebuild. The working directory is empty.
    src/styles/
    src/themes-assets/
    ```
-10. Write a top-level `README.md` with: project name, one-line description, "Tauri 2 rebuild of ColaMD", dev/build commands (`npm run tauri dev`, `npm run tauri build`), and a pointer to `AGENTS.md` and `plan.md`.
+10. Write a top-level `README.md` with: project name, one-line description, "Tauri 2 rebuild of ColaMD as Markzy", dev/build commands (`npm run tauri dev`, `npm run tauri build`), and a pointer to `AGENTS.md` and `plan.md`.
 
 ### Done when
 
-- [ ] `npm run tauri dev` opens a frameless window titled "ColaMD" with the placeholder rendering.
+- [ ] `npm run tauri dev` opens a frameless window titled "Markzy" with the placeholder rendering.
 - [ ] `cargo clippy -- -D warnings` is clean in `src-tauri/`.
 - [ ] `cargo fmt` is clean.
 - [ ] `package.json`, `Cargo.toml`, `tauri.conf.json` match the spec above.
@@ -133,7 +133,7 @@ Now port the Milkdown renderer into the Tauri webview and rewire its IPC from pr
 
 ### Prompt
 
-Implement the real file read/write and the live agent sync - the headline feature of ColaMD.
+Implement the real file read/write and the live agent sync - the headline feature of Markzy.
 
 1. In `commands.rs`, implement (replace `todo!()`):
    - `open_file() -> Option<{path: String, content: String}>` using `tauri-plugin-dialog` `open()` filtered to `.md`/`.markdown`, then `std::fs::read_to_string`.
@@ -176,25 +176,25 @@ Implement the supporting UX features.
 1. **Application menu** using `tauri::menu` (Tauri 2 menu API). Reproduce the upstream menu structure exactly: File (New, New Slides, Open, Open as Slides, Save, Save As..., Export..., Export Slides..., Close Window, Quit), Edit (Undo/Redo/Cut/Copy/Paste/Select All - wired to native webview editing where possible), Theme (list of built-in themes + Import Theme...), and an About item. Menu items that are not yet implemented (Slides, Export) can be disabled in this phase and enabled in Phases 5-6. Wire enabled items to the renderer via custom events or direct command calls.
 2. **Themes**: move `../ColaMD-upstream/themes/*.css` into `src/themes-assets/`. Implement `theme.rs`:
    - `list_builtin_themes() -> Vec<{id: String, name: String, css: String}>` (embed CSS with `include_str!`).
-   - `list_user_themes() -> Vec<...>` reading `~/.colamd/themes/` (use `dirs::config_dir` joined with `colamd/themes`).
-   - `import_theme(source_path: String) -> ()` - copy the chosen CSS into `~/.colamd/themes/`.
+   - `list_user_themes() -> Vec<...>` reading `~/.markzy/themes/` (use `dirs::config_dir` joined with `markzy/themes`).
+   - `import_theme(source_path: String) -> ()` - copy the chosen CSS into `~/.markzy/themes/`.
    - `load_theme(id: String) -> String` - return the CSS for injection.
-   - `set_theme(id: String) -> ()` - persist the active theme id (write to `~/.colamd/settings.json`) and emit `theme-changed`.
+   - `set_theme(id: String) -> ()` - persist the active theme id (write to `~/.markzy/settings.json`) and emit `theme-changed`.
    Expose all as commands; renderer applies the CSS by injecting a `<style id="theme">` and swapping it on `theme-changed`.
 3. **Cmd/Ctrl+Click links**: in the renderer, listen for click events on `<a>` inside the editor; when the modifier is held, call `ipc.openExternal(url)` which invokes `tauri-plugin-opener` `open_url`. Match upstream's exact modifier (Cmd on mac, Ctrl on Windows/Linux).
 4. **Rich text copy**: ensure the webview's native copy preserves formatting (Milkdown/ProseMirror already produces rich HTML on copy). Verify by copying from the editor and pasting into a rich target (e.g. Word/Gmail web). No Rust work expected; if formatting is stripped, investigate WebView2 clipboard settings.
 5. **Drag & drop files**: use Tauri's `onFileDropEvent` (or the `tauri-plugin-fs` drag-drop API for Tauri 2) to accept a dropped `.md` file - open it via the same path as `open_file`. Reject non-`.md` drops silently.
-6. **File associations**: confirm `tauri.conf.json` registers `.md`/`.markdown` (set in Phase 0). Implement a `tauri::UriSchemeContext`/single-instance handler so that double-clicking a `.md` file in Explorer opens it in the running (or a new) ColaMD window. Test on Windows.
+6. **File associations**: confirm `tauri.conf.json` registers `.md`/`.markdown` (set in Phase 0). Implement a `tauri::UriSchemeContext`/single-instance handler so that double-clicking a `.md` file in Explorer opens it in the running (or a new) Markzy window. Test on Windows.
 7. Run the full verification suite (`cargo fmt`, `cargo clippy -- -D warnings`, `npm run build`). Manually smoke-test each feature above.
 
 ### Done when
 
 - [ ] Application menu matches upstream structure; implemented items work, unimplemented items are disabled.
-- [ ] All built-in themes load and switch; custom themes import and persist in `~/.colamd/themes/`.
+- [ ] All built-in themes load and switch; custom themes import and persist in `~/.markzy/themes/`.
 - [ ] Cmd/Ctrl+click on an editor link opens it in the default browser.
 - [ ] Rich text copy preserves formatting when pasted into a rich target.
 - [ ] Dragging a `.md` file onto the window opens it.
-- [ ] Double-clicking a `.md` file in Explorer opens it in ColaMD.
+- [ ] Double-clicking a `.md` file in Explorer opens it in Markzy.
 - [ ] `cargo clippy -- -D warnings` and `npm run build` are clean.
 
 ---
@@ -274,10 +274,10 @@ Implement export. Match upstream's two export modes exactly.
 Final phase. Verify cross-platform parity and produce installers.
 
 1. **macOS verification** (if you have access; if not, document it as "untested in CI, requires Mac runner" and at minimum run `cargo check --target aarch64-apple-darwin` and `x86_64-apple-darwin`):
-   - Run `npm run tauri dev` on macOS. Confirm WKWebView renders Milkdown correctly, frameless titlebar works with `macos-private-api`, menus appear in the system menu bar, Cmd+click opens links, `~/.colamd/themes/` resolves to the right place.
+   - Run `npm run tauri dev` on macOS. Confirm WKWebView renders Milkdown correctly, frameless titlebar works with `macos-private-api`, menus appear in the system menu bar, Cmd+click opens links, `~/.markzy/themes/` resolves to the right place.
    - Fix any platform-specific issues (e.g. `data-tauri-drag-region` behavior, traffic-light positioning if you add native controls later).
 2. **Linux verification** (same caveat - at minimum `cargo check --target x86_64-unknown-linux-gnu`):
-   - Confirm WebKitGTK renders Milkdown, frameless window works, `~/.colamd/themes/` resolves via XDG dirs.
+   - Confirm WebKitGTK renders Milkdown, frameless window works, `~/.markzy/themes/` resolves via XDG dirs.
 3. **Windows verification** (primary target - do this thoroughly):
    - Confirm WebView2 path, frameless window, file associations, drag-drop, live agent sync on a real atomic rewrite (have a script do `tmp && Move-Item tmp file.md -Force`), print-to-PDF, slides server, export. Fix any rough edges.
 4. **Packaging**: run `npm run tauri build` on Windows and confirm it produces `msi` and `nsis` installers in `src-tauri/target/release/bundle/`. Check the installer size is in the expected ~5-15MB range (vs Electron's ~150MB). If icons are still placeholders, generate real ones from a source PNG with `npm run tauri icon path/to/icon.png` before building.

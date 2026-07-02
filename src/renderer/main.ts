@@ -93,7 +93,7 @@ async function init(): Promise<void> {
     const codeColor = getElColor("code", textColor);
 
     const html = `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>ColaMD Export</title>
+<html><head><meta charset="utf-8"><title>Markzy Export</title>
 <style>
 body{max-width:780px;margin:40px auto;padding:20px;font-family:${fontFamily};line-height:1.75;background:${bgColor};color:${textColor}}
 h1{font-size:2em;font-weight:700;border-bottom:1px solid ${borderColor};padding-bottom:.3em}
@@ -170,4 +170,4 @@ img{max-width:100%}
   document.addEventListener("drop", (e) => e.preventDefault());
 }
 
-init().catch((e) => console.error("ColaMD init failed:", e));
+init().catch((e) => console.error("Markzy init failed:", e));

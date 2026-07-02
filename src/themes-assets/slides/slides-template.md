@@ -1,11 +1,11 @@
 ---
-kicker: ColaMD
+kicker: Markzy
 chip: Slides · 快速上手
 page: @yourname
 ---
 
 <!-- type: cover -->
-# ColaMD Slides
+# Markzy Slides
 
 ---
 
@@ -25,7 +25,7 @@ page: @yourname
 ## 插入图片
 把图片放在 .md 文件同目录，用标准 Markdown 语法引用：
 
-![ColaMD Icon](icon.png)
+![Markzy Icon](icon.png)
 
 ---
 

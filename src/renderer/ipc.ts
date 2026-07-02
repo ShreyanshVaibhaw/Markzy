@@ -13,7 +13,7 @@ export interface ThemeResult {
 
 export type AgentState = "idle" | "active" | "cooldown";
 
-export interface ColaMDAPI {
+export interface MarkzyAPI {
   openFile: () => Promise<FileContent | null>;
   openFilePath: (path: string) => Promise<FileContent | null>;
   saveFile: (content: string) => Promise<boolean>;
@@ -44,7 +44,7 @@ export interface ColaMDAPI {
   onAgentActivity: (callback: (state: AgentState) => void) => void;
 }
 
-export const ipc: ColaMDAPI = {
+export const ipc: MarkzyAPI = {
   openFile: () => invoke<FileContent | null>("open_file"),
   openFilePath: (path: string) => invoke<FileContent | null>("open_file_path", { path }),
   saveFile: (content: string) => invoke<boolean>("save_file", { content }),

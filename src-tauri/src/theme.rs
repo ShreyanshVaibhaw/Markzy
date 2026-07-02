@@ -8,7 +8,7 @@ use crate::commands::ThemeResult;
 
 fn themes_dir() -> Result<PathBuf, String> {
     let home = dirs::home_dir().ok_or("Cannot find home directory")?;
-    let dir = home.join(".colamd").join("themes");
+    let dir = home.join(".markzy").join("themes");
     if !dir.exists() {
         fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
     }

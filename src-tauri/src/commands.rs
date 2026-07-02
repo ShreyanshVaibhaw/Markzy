@@ -107,7 +107,7 @@ fn update_title(app: &AppHandle, path: Option<&str>) {
                     .unwrap_or_else(|| "Untitled".to_string())
             })
             .unwrap_or_else(|| "Untitled".to_string());
-        let _ = window.set_title(&format!("{} \u{2014} ColaMD", filename));
+        let _ = window.set_title(&format!("{} \u{2014} Markzy", filename));
     }
 }
 

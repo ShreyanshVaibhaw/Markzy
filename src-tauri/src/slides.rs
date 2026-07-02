@@ -57,7 +57,7 @@ pub async fn open_as_slides(
                     .file_name()
                     .map(|n| n.to_string_lossy().to_string())
                     .unwrap_or_else(|| "Untitled".to_string());
-                let _ = window.set_title(&format!("{} \u{2014} ColaMD", file_name));
+                let _ = window.set_title(&format!("{} \u{2014} Markzy", file_name));
             }
 
             crate::watcher::start_watcher(&app, &state, &path.to_string_lossy());

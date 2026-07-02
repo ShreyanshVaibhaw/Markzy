@@ -1,12 +1,14 @@
-# AGENTS.md - Instructions for AI agents working on ColaMD-Tauri
+# AGENTS.md - Instructions for AI agents working on Markzy
 
 > If you are an AI agent (Claude Code, Cursor, Copilot, Codex, etc.) touching this repository, read this file **first**, every session, before making any change. Then read `plan.md` if you are executing the build.
 
 ## What this project is
 
-ColaMD-Tauri is a rebuild of [ColaMD](https://github.com/marswaveai/ColaMD) - "The Agent Native Markdown Editor" - ported from Electron to **Tauri 2 (Rust) + WebView2/WKWebView/WebKitGTK**. The original app's headline feature is **live agent sync**: when an AI agent edits a `.md` file on disk, the editor updates in real time and a titlebar dot pulses orange while the agent writes and flashes green when it settles.
+Markzy is a rebuild of [ColaMD](https://github.com/marswaveai/ColaMD) - "The Agent Native Markdown Editor" - ported from Electron to **Tauri 2 (Rust) + WebView2/WKWebView/WebKitGTK**. The original app's headline feature is **live agent sync**: when an AI agent edits a `.md` file on disk, the editor updates in real time and a titlebar dot pulses orange while the agent writes and flashes green when it settles.
 
-This is a **port**, not a redesign. Feature parity with upstream v1.5.0 is the goal. The win is footprint: ~10-30MB RAM and ~5-15MB installers instead of Electron's ~200MB+ / ~150MB.
+The win is footprint: ~10-30MB RAM and ~5-15MB installers instead of Electron's ~200MB+ / ~150MB.
+
+This is a **port**, not a redesign. Feature parity with upstream v1.5.0 is the goal.
 
 ## Stack (do not change without user approval)
 
@@ -22,7 +24,7 @@ This is a **port**, not a redesign. Feature parity with upstream v1.5.0 is the g
 ## Repository layout
 
 ```
-colamd-tauri/
+markzy/
   src-tauri/                  Rust backend
     src/
       main.rs                 Tauri init, plugin registration, invoke_handler

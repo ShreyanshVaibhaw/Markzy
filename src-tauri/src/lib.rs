@@ -215,13 +215,13 @@ fn build_view_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> 
 
 fn build_help_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> {
     let submenu = Submenu::new(app, "Help", true)?;
-    let about = MenuItem::with_id(app, "menu-about", "About ColaMD", true, None::<&str>)?;
+    let about = MenuItem::with_id(app, "menu-about", "About Markzy", true, None::<&str>)?;
     submenu.append(&about)?;
     Ok(submenu)
 }
 
 fn build_app_menu_mac<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> {
-    let submenu = Submenu::new(app, "ColaMD", true)?;
+    let submenu = Submenu::new(app, "Markzy", true)?;
 
     let about = PredefinedMenuItem::about(app, None, None)?;
     let sep1 = PredefinedMenuItem::separator(app)?;
@@ -267,7 +267,7 @@ fn handle_menu_event<R: Runtime>(app: &AppHandle<R>, id: &str) {
     if let Some(rest) = id.strip_prefix("theme-custom:") {
         let file_name = format!("{}.css", rest);
         if let Some(home) = dirs::home_dir() {
-            let css_path = home.join(".colamd").join("themes").join(&file_name);
+            let css_path = home.join(".markzy").join("themes").join(&file_name);
             if let Ok(css) = std::fs::read_to_string(&css_path) {
                 emit_to_main_with_payload(app, "set-theme", format!("custom:{}", file_name));
                 emit_to_main_with_payload(app, "set-custom-css", css);
@@ -303,7 +303,7 @@ fn handle_menu_event<R: Runtime>(app: &AppHandle<R>, id: &str) {
         "menu-about" => {
             let _ = app
                 .opener()
-                .open_url("https://github.com/marswaveai/colamd", None::<&str>);
+                .open_url("https://github.com/ShreyanshVaibhaw/Markzy", None::<&str>);
         }
         "menu-zoom-in" => {
             if let Some(window) = app.get_webview_window("main") {

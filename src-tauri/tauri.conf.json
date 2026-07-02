@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "ColaMD",
+  "productName": "Markzy",
   "version": "1.5.0",
-  "identifier": "com.marswave.colamd",
+  "identifier": "com.shreyanshvaibhaw.markzy",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -14,7 +14,7 @@
     "macOSPrivateApi": true,
     "windows": [
       {
-        "title": "ColaMD",
+        "title": "Markzy",
         "width": 960,
         "height": 720,
         "minWidth": 600,

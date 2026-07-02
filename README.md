@@ -1,4 +1,4 @@
-# ColaMD-Tauri (Markzy)
+# Markzy
 
 The Agent Native Markdown Editor - a Tauri 2 + Rust rebuild of [ColaMD](https://github.com/marswaveai/ColaMD).
 
@@ -6,11 +6,11 @@ When an AI agent edits a `.md` file on disk, the editor updates in real time and
 
 ## Why a rebuild?
 
-The original ColaMD is built on Electron (~200MB+ RAM, ~150MB installers). This rebuild uses Tauri 2 with the native OS webview (WebView2 on Windows, WKWebView on macOS, WebKitGTK on Linux), targeting ~10-30MB RAM and ~5-15MB installers - roughly 10x lighter - while keeping full feature parity and the same Milkdown WYSIWYG editor.
+The original ColaMD is built on Electron (~200MB+ RAM, ~150MB installers). Markzy uses Tauri 2 with the native OS webview (WebView2 on Windows, WKWebView on macOS, WebKitGTK on Linux), targeting ~10-30MB RAM and ~5-15MB installers - roughly 10x lighter - while keeping full feature parity and the same Milkdown WYSIWYG editor.
 
 ## Results
 
-| Metric | Electron (upstream) | Tauri (this build) | Improvement |
+| Metric | Electron (upstream ColaMD) | Markzy (Tauri) | Improvement |
 |---|---|---|---|
 | RAM usage | ~200MB+ | ~30MB | ~7x less |
 | MSI installer | ~150MB | 4.38MB | ~34x smaller |
@@ -38,7 +38,7 @@ The original ColaMD is built on Electron (~200MB+ RAM, ~150MB installers). This 
 - **Export** - PDF (print dialog) and HTML (self-contained)
 - **Slides Export** - Single HTML with inlined images, or folder with videos
 - **Drag & Drop** - Drop `.md` files onto the window
-- **File Associations** - Double-click `.md` files to open in ColaMD
+- **File Associations** - Double-click `.md` files to open in Markzy
 - **Cmd/Ctrl+Click Links** - Open links in your browser
 
 ## Development
@@ -71,4 +71,4 @@ See `AGENTS.md` for the full repository layout, coding conventions, and the core
 
 MIT - Free forever.
 
-Built by [marswave.ai](https://marswave.ai) for the agent-native future. Tauri rebuild by [ShreyanshVaibhaw](https://github.com/ShreyanshVaibhaw).
+Markzy is a Tauri 2 rebuild of [ColaMD](https://github.com/marswaveai/ColaMD) by [marswave.ai](https://marswave.ai), built by [ShreyanshVaibhaw](https://github.com/ShreyanshVaibhaw).

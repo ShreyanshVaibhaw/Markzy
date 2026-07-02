@@ -9,7 +9,7 @@
 |---|---|---|---|
 | Window creation (960x720, frameless, traffic lights) | `createWindow()` | `main.rs` / `lib.rs` + `tauri.conf.json` | Tauri frameless window; macOS uses `macOSPrivateApi` for traffic lights. Window size in upstream is 960x720 (plan.md said 960x640 - use upstream's 960x720). |
 | Per-window state (filePath, watcher, agent state) | `WindowState` struct + `windowStates` map | `watcher.rs` + `commands.rs` | Tauri has single-window by default; multi-window is a future concern. State held in `tauri::Manager` state. |
-| Title updates (`fileName - ColaMD`) | `updateTitle()` | `commands.rs` | Set via `window.set_title()`. |
+| Title updates (`fileName - Markzy`) | `updateTitle()` | `commands.rs` | Set via `window.set_title()`. |
 | File name suggestion (from first heading) | `suggestFileName()` | `commands.rs` | Same regex logic in Rust. |
 | File watching (`fs.watch`) | `watchFile()` | `watcher.rs` | Use `notify` crate. **Upstream debounces 100ms** (not 200ms - plan.md was approximate). |
 | Agent activity state machine | `transitionAgentState()` | `watcher.rs` | **Upstream timing: active -> cooldown after 3s, cooldown -> idle after 2s.** Plan.md said ~600ms; use the actual upstream values to match the dot animation exactly. |
@@ -23,7 +23,7 @@
 | New Slides (load template into editor) | `new-slides` handler | `commands.rs` / `slides.rs` | Reads `slides-template.md`, emits `new-slides-content` to renderer. |
 | Open as Slides (serve + open browser) | `open-as-slides` handler | `slides.rs` | Auto-saves current content, copies `template.html` to file's dir, patches `fetch('slides.md')` if filename differs, starts server, opens browser. |
 | Export Slides (inline images, copy videos) | `export-slides` handler | `export.rs` | Detect video via `<!-- type: video, src: ... -->`. No video: single HTML with base64 images. With video: folder + videos. |
-| Custom themes (`~/.colamd/themes/`) | `loadCustomTheme()`, `loadThemeCSS()`, `scanCustomThemes()` | `theme.rs` | Use `dirs` crate for home dir. Same path: `~/.colamd/themes/`. |
+| Custom themes (`~/.markzy/themes/`) | `loadCustomTheme()`, `loadThemeCSS()`, `scanCustomThemes()` | `theme.rs` | Use `dirs` crate for home dir. Same path: `~/.markzy/themes/`. |
 | Menu (File/Edit/View/Theme/Help) | `buildMenu()` | `lib.rs` (Tauri menu API) | Reproduce exact menu structure. Menu sends events to renderer (same event names). |
 | Open external URL | `open-external` handler | `tauri-plugin-opener` | Validate `https://` or `http://` only. |
 | App lifecycle (file args, open-file event) | `whenReady()`, `open-file` | `lib.rs` | Parse CLI args for file paths; handle file association launches. |
@@ -46,8 +46,8 @@ The renderer calls `window.electronAPI.*`. In Tauri, `src/renderer/ipc.ts` must 
 | `exportSlides(content)` | `content: string` | `boolean` | `export_slides` | Inline images, copy videos. |
 | `newSlides()` | none | `string \| null` | `new_slides` | Returns template content (or emits `new-slides-content` event). |
 | `openAsSlides(content)` | `content: string` | `boolean` | `open_as_slides` | Auto-save, start server, open browser. |
-| `loadCustomTheme()` | none | `{name: string, css: string} \| null` | `load_custom_theme` | Dialog -> copy to `~/.colamd/themes/` -> return CSS. |
-| `loadThemeCSS(fileName)` | `fileName: string` | `string \| null` | `load_theme_css` | Read CSS from `~/.colamd/themes/{fileName}`. |
+| `loadCustomTheme()` | none | `{name: string, css: string} \| null` | `load_custom_theme` | Dialog -> copy to `~/.markzy/themes/` -> return CSS. |
+| `loadThemeCSS(fileName)` | `fileName: string` | `string \| null` | `load_theme_css` | Read CSS from `~/.markzy/themes/{fileName}`. |
 | `getPathForFile(file)` | `file: File` | `string` | **not needed** | Tauri drop events provide paths directly; no `File` object path resolution needed. |
 | `openExternal(url)` | `url: string` | `void` | `open_external` | Validate http(s). Uses `tauri-plugin-opener`. |
 
@@ -75,7 +75,7 @@ The renderer calls `window.electronAPI.*`. In Tauri, `src/renderer/ipc.ts` must 
 ### TypeScript interface (for `ipc.ts` to implement)
 
 ```typescript
-export interface ColaMDAPI {
+export interface MarkzyAPI {
   openFile: () => Promise<{ path: string; content: string } | null>;
   openFilePath: (path: string) => Promise<{ path: string; content: string } | null>;
   saveFile: (content: string) => Promise<boolean>;
@@ -179,12 +179,12 @@ On `copy`/`cut` events, the renderer intercepts the clipboard HTML and adds inli
 ### Menu structure (exact)
 
 ```
-ColaMD (mac only): About, Sep, Hide, Hide Others, Unhide, Sep, Quit
+Markzy (mac only): About, Sep, Hide, Hide Others, Unhide, Sep, Quit
 File: New (CmdOrCtrl+N), New Slides (CmdOrCtrl+Shift+N), Open (CmdOrCtrl+O), Sep, Save (CmdOrCtrl+S), Save As (CmdOrCtrl+Shift+S), Sep, Export PDF, Export HTML, Export Slides, Open as Slides (CmdOrCtrl+Shift+P), Sep, Close/Quit
 Edit: Undo, Redo, Sep, Cut, Copy, Paste, Select All
 View: Reset Zoom, Zoom In, Zoom Out, Sep, Toggle Fullscreen
 Theme: Light, Dark, Elegant, Newsprint, [Sep, custom themes...], Sep, Import Theme...
-Help: About ColaMD -> opens https://github.com/marswaveai/colamd
+Help: About Markzy -> opens https://github.com/ShreyanshVaibhaw/Markzy
 ```
 
 ### Built-in themes
@@ -199,7 +199,7 @@ Default theme: `elegant` (from `loadSavedTheme()` fallback).
 
 ### Custom themes
 
-Stored in `~/.colamd/themes/*.css`. The menu scans this directory and lists each `.css` file as a theme option. Selecting a custom theme sends both `set-theme` (`custom:filename`) and `set-custom-css` (the CSS content).
+Stored in `~/.markzy/themes/*.css`. The menu scans this directory and lists each `.css` file as a theme option. Selecting a custom theme sends both `set-theme` (`custom:filename`) and `set-custom-css` (the CSS content).
 
 ## 5. Discrepancies with plan.md (resolved)
 
