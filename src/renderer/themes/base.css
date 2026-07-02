@@ -19,6 +19,15 @@ html, body {
   align-items: center;
 }
 
+#app-logo {
+  height: 22px;
+  width: auto;
+  margin-left: 12px;
+  pointer-events: none;
+  user-select: none;
+  flex-shrink: 0;
+}
+
 #menubar-slot {
   display: flex;
   align-items: center;
