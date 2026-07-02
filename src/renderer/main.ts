@@ -270,7 +270,13 @@ img{max-width:100%}
 
 onTabSwitch((prev, next) => {
   if (prev && prev.id !== next.id) {
-    saveActiveTabState();
+    if (sourceModeActive) {
+      prev.content = sourceEl().value;
+    } else {
+      prev.content = getMarkdown();
+      prev.dirty = true;
+    }
+    prev.isSlides = sourceModeActive;
   }
   loadTabContent();
   if (prev?.filePath) {

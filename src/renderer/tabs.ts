@@ -99,6 +99,16 @@ export function closeTab(tabId: string): void {
   }
 
   renderTabBar();
+
+  if (activeTabId !== tabId) {
+    const newActive = getActiveTab();
+    const oldTab = tabs.find((t) => t.id === tabId) ?? null;
+    if (newActive) {
+      for (const cb of tabSwitchCallbacks) {
+        cb(oldTab, newActive);
+      }
+    }
+  }
 }
 
 export function switchToTab(tabId: string): [Tab | null, Tab] {
