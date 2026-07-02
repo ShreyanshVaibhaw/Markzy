@@ -1,7 +1,7 @@
 import { Editor, rootCtx, defaultValueCtx, editorViewCtx, serializerCtx, remarkPluginsCtx } from "@milkdown/kit/core";
 import { DOMSerializer } from "@milkdown/kit/prose/model";
 import remarkBreaks from "remark-breaks";
-import { commonmark } from "@milkdown/kit/preset/commonmark";
+import { commonmark, headingIdGenerator } from "@milkdown/kit/preset/commonmark";
 import { gfm } from "@milkdown/kit/preset/gfm";
 import { history } from "@milkdown/kit/plugin/history";
 import { listener, listenerCtx } from "@milkdown/kit/plugin/listener";
@@ -70,6 +70,13 @@ export async function createEditor(
       ctx.set(rootCtx, root);
       ctx.set(defaultValueCtx, defaultContent);
       ctx.set(remarkPluginsCtx, [{ plugin: remarkBreaks, options: {} }]);
+      ctx.set(headingIdGenerator.key, (node) => {
+        return node.textContent
+          .toLowerCase()
+          .trim()
+          .replace(/[^\w\s-]/g, "")
+          .replace(/\s+/g, "-");
+      });
       if (onChange) {
         ctx.get(listenerCtx).markdownUpdated((_ctx, markdown) => {
           onChange(markdown);
@@ -88,14 +95,24 @@ export async function createEditor(
   root.addEventListener("cut", enhanceClipboard);
 
   root.addEventListener("click", (e) => {
-    if (!(e.metaKey || e.ctrlKey)) return;
     const link = (e.target as HTMLElement).closest("a");
     if (!link) return;
     const href = link.getAttribute("href");
-    if (href) {
+    if (!href) return;
+
+    if (href.startsWith("#")) {
       e.preventDefault();
-      ipc.openExternal(href);
+      const targetId = href.slice(1);
+      const target = root.querySelector(`[id="${CSS.escape(targetId)}"]`);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      return;
     }
+
+    if (!(e.metaKey || e.ctrlKey)) return;
+    e.preventDefault();
+    ipc.openExternal(href);
   });
 
   return editorInstance;
