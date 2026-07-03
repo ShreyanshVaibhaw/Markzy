@@ -156,6 +156,14 @@ export function markActiveTabClean(): void {
   }
 }
 
+export function markTabClean(tabId: string): void {
+  const tab = tabs.find((t) => t.id === tabId);
+  if (tab) {
+    tab.dirty = false;
+    renderTabBar();
+  }
+}
+
 export function setActiveTabSlides(isSlides: boolean): void {
   const tab = getActiveTab();
   if (tab) {

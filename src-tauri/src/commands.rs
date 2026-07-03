@@ -10,6 +10,7 @@ use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_opener::OpenerExt;
 
 use crate::watcher::{start_watcher, stop_watcher, WatcherState};
+use crate::StartupFiles;
 
 #[derive(Serialize, Clone)]
 pub struct FileContent {
@@ -282,4 +283,14 @@ pub fn open_external(url: String, app: AppHandle) -> Result<(), String> {
     app.opener()
         .open_url(url, None::<&str>)
         .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn get_startup_files(state: tauri::State<'_, StartupFiles>) -> Vec<String> {
+    state
+        .paths
+        .lock()
+        .ok()
+        .and_then(|mut guard| guard.take())
+        .unwrap_or_default()
 }

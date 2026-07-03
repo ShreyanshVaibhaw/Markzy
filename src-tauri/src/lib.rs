@@ -4,10 +4,26 @@ mod slides;
 mod theme;
 mod watcher;
 
+use std::path::Path;
+use std::sync::Mutex;
+
 use tauri::menu::{IsMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::{AppHandle, Emitter, Manager, Runtime};
 use tauri_plugin_opener::OpenerExt;
 use watcher::WatcherState;
+
+#[derive(Default)]
+pub struct StartupFiles {
+    pub paths: Mutex<Option<Vec<String>>>,
+}
+
+fn is_markdown_path(p: &str) -> bool {
+    let ext = match Path::new(p).extension().and_then(|e| e.to_str()) {
+        Some(e) => e.to_ascii_lowercase(),
+        None => return false,
+    };
+    matches!(ext.as_str(), "md" | "markdown" | "mdown" | "mkd")
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Platform {
@@ -363,11 +379,34 @@ fn handle_menu_event<R: Runtime>(app: &AppHandle<R>, id: &str) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     #[allow(unused_mut)]
-    let mut builder = tauri::Builder::default()
+    let mut builder = tauri::Builder::default();
+
+    #[cfg(not(target_os = "macos"))]
+    {
+        builder = builder.plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.unminimize();
+                let _ = window.set_focus();
+            }
+
+            let paths: Vec<String> = argv
+                .into_iter()
+                .skip(1)
+                .filter(|p| is_markdown_path(p) && Path::new(p).exists())
+                .collect();
+
+            if !paths.is_empty() {
+                let _ = app.emit("open-files-external", paths);
+            }
+        }));
+    }
+
+    builder = builder
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_opener::init())
-        .manage(WatcherState::new());
+        .manage(WatcherState::new())
+        .manage(StartupFiles::default());
 
     #[cfg(target_os = "macos")]
     {
@@ -381,6 +420,18 @@ pub fn run() {
         {
             let menu = build_menu(_app.handle())?;
             _app.set_menu(menu)?;
+        }
+
+        let startup_paths: Vec<String> = std::env::args()
+            .skip(1)
+            .filter(|p| is_markdown_path(p) && Path::new(p).exists())
+            .collect();
+        if !startup_paths.is_empty() {
+            let state = _app.state::<StartupFiles>();
+            let guard = state.paths.lock();
+            if let Ok(mut g) = guard {
+                *g = Some(startup_paths);
+            }
         }
 
         if let Some(window) = _app.get_webview_window("main") {
@@ -399,6 +450,7 @@ pub fn run() {
             commands::save_file,
             commands::save_file_as,
             commands::open_external,
+            commands::get_startup_files,
             export::export_pdf,
             export::export_html,
             export::export_slides,

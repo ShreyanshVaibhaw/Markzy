@@ -1,6 +1,6 @@
 [package]
 name = "markzy"
-version = "1.5.0"
+version = "1.6.0"
 description = "The Agent Native Markdown Editor - Tauri rebuild"
 authors = ["marswave.ai"]
 edition = "2021"
@@ -31,3 +31,6 @@ tower = "0.4"
 tower-http = { version = "0.5", features = ["fs"] }
 chrono = "0.4"
 regex = "1"
+
+[target.'cfg(not(target_os = "macos"))'.dependencies]
+tauri-plugin-single-instance = "2"

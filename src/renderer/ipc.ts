@@ -26,9 +26,11 @@ export interface MarkzyAPI {
   loadCustomTheme: () => Promise<ThemeResult | null>;
   loadThemeCSS: (fileName: string) => Promise<string | null>;
   openExternal: (url: string) => void;
+  getStartupFiles: () => Promise<string[]>;
   onFileChanged: (callback: (content: string) => void) => void;
   onNewFile: (callback: () => void) => void;
   onFileOpened: (callback: (data: FileContent) => void) => void;
+  onOpenFilesExternal: (callback: (paths: string[]) => void) => void;
   onMenuOpen: (callback: () => void) => void;
   onMenuSave: (callback: () => void) => void;
   onMenuSaveAs: (callback: () => void) => void;
@@ -62,6 +64,7 @@ export const ipc: MarkzyAPI = {
   openExternal: (url: string) => {
     invoke("open_external", { url });
   },
+  getStartupFiles: () => invoke<string[]>("get_startup_files"),
   onFileChanged: (callback) => {
     listen("file-changed", (event) => callback(event.payload as string));
   },
@@ -70,6 +73,9 @@ export const ipc: MarkzyAPI = {
   },
   onFileOpened: (callback) => {
     listen("file-opened", (event) => callback(event.payload as FileContent));
+  },
+  onOpenFilesExternal: (callback) => {
+    listen("open-files-external", (event) => callback(event.payload as string[]));
   },
   onMenuOpen: (callback) => {
     listen("menu-open", () => callback());

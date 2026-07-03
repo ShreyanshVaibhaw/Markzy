@@ -11,10 +11,12 @@ import {
   getActiveTab,
   updateActiveTabFilePath,
   markActiveTabClean,
+  markTabClean,
   setActiveTabSlides,
   getActiveTabContent,
   ensureTab,
   getTabForPath,
+  hasTabs,
   onTabSwitch,
 } from "./tabs";
 import "./themes/base.css";
@@ -80,6 +82,24 @@ function loadTabContent(): void {
   } else {
     exitSourceMode();
     setMarkdown(tab.content);
+  }
+}
+
+async function openPathsAsTabs(paths: string[]): Promise<void> {
+  const createdIds: string[] = [];
+  for (const filePath of paths) {
+    const existing = getTabForPath(filePath);
+    if (existing) {
+      switchToTab(existing.id);
+      continue;
+    }
+    const result = await ipc.openFilePath(filePath);
+    if (!result) continue;
+    const tab = createTab(result.path, result.content);
+    createdIds.push(tab.id);
+  }
+  for (const id of createdIds) {
+    markTabClean(id);
   }
 }
 
@@ -204,6 +224,12 @@ img{max-width:100%}
     }
   });
 
+  ipc.onOpenFilesExternal(async (paths) => {
+    saveActiveTabState();
+    await openPathsAsTabs(paths);
+    loadTabContent();
+  });
+
   ipc.onSetTheme((theme) => applyTheme(theme));
   ipc.onSetCustomCSS((css) => {
     const theme = loadSavedTheme();
@@ -248,23 +274,21 @@ img{max-width:100%}
       !filePath.endsWith(".mkd")
     )
       return;
-    const existing = getTabForPath(filePath);
-    if (existing) {
-      saveActiveTabState();
-      switchToTab(existing.id);
-      loadTabContent();
-      return;
-    }
-    const result = await ipc.openFilePath(filePath);
-    if (!result) return;
-    createTab(result.path, result.content);
+    saveActiveTabState();
+    await openPathsAsTabs([filePath]);
     loadTabContent();
   });
 
   document.addEventListener("dragover", (e) => e.preventDefault());
   document.addEventListener("drop", (e) => e.preventDefault());
 
-  createTab();
+  const startupPaths = await ipc.getStartupFiles();
+  if (startupPaths.length > 0) {
+    await openPathsAsTabs(startupPaths);
+  }
+  if (!hasTabs()) {
+    createTab();
+  }
   loadTabContent();
 }
 
