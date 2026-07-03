@@ -1,5 +1,6 @@
 import { ipc } from "./ipc";
 import { applyTheme } from "./themes/theme-manager";
+import { checkForUpdate } from "./updater";
 import {
   createTab,
   closeTab,
@@ -287,6 +288,8 @@ export function initMenuBar(): void {
       }
       case 4:
         items = [
+          { label: "Check for Updates...", action: () => void checkForUpdate(false) },
+          { label: "", separator: true },
           { label: "About Markzy", action: () => ipc.openExternal("https://github.com/ShreyanshVaibhaw/Markzy") },
         ];
         break;

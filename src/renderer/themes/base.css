@@ -783,3 +783,187 @@ body.theme-one-dark #editor .ProseMirror strong {
   background: var(--border-color);
   border-radius: 3px;
 }
+
+.update-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  animation: update-fade-in 0.15s ease;
+}
+
+.update-modal {
+  width: 420px;
+  max-width: calc(100vw - 40px);
+  max-height: calc(100vh - 80px);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  animation: update-pop-in 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+.update-header {
+  padding: 16px 20px 8px;
+}
+
+.update-title-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.update-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.update-version {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--link-color);
+}
+
+.update-body {
+  padding: 0 20px 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.update-current {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.update-notes {
+  margin: 0;
+  padding: 10px 12px;
+  font-family: "SF Mono", "Fira Code", Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-color);
+  background: var(--code-block-bg);
+  border-radius: 6px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.update-progress {
+  padding: 0 20px 14px;
+}
+
+.update-progress-bar {
+  height: 6px;
+  background: var(--code-bg);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.update-progress-fill {
+  height: 100%;
+  width: 0;
+  background: var(--link-color);
+  border-radius: 3px;
+  transition: width 0.2s ease;
+}
+
+.update-progress-text {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.update-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+.update-btn {
+  padding: 7px 16px;
+  font-size: 13px;
+  font-family: inherit;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.update-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.update-btn-primary {
+  background: var(--link-color);
+  color: #fff;
+}
+
+.update-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.update-btn-secondary {
+  background: transparent;
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+.update-btn-secondary:hover:not(:disabled) {
+  background: rgba(128, 128, 128, 0.15);
+}
+
+.update-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  z-index: 5000;
+  padding: 10px 18px;
+  font-size: 13px;
+  color: var(--text-color);
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.update-toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@keyframes update-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes update-pop-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .update-overlay,
+  .update-modal,
+  .update-progress-fill,
+  .update-toast {
+    animation: none;
+    transition: none;
+  }
+}

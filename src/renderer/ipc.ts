@@ -44,6 +44,7 @@ export interface MarkzyAPI {
   onMenuImportTheme: (callback: () => void) => void;
   onMenuExportSlides: (callback: () => void) => void;
   onMenuCloseTab: (callback: () => void) => void;
+  onMenuCheckUpdates: (callback: () => void) => void;
   onAgentActivity: (callback: (state: AgentState) => void) => void;
   stopWatch: () => void;
   watchFile: (path: string) => void;
@@ -118,6 +119,9 @@ export const ipc: MarkzyAPI = {
   },
   onMenuCloseTab: (callback) => {
     listen("menu-close-tab", () => callback());
+  },
+  onMenuCheckUpdates: (callback) => {
+    listen("menu-check-updates", () => callback());
   },
   stopWatch: () => {
     invoke("stop_watch");

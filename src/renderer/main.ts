@@ -3,6 +3,7 @@ import { applyTheme, loadSavedTheme } from "./themes/theme-manager";
 import { ipc } from "./ipc";
 import { setupTitlebar } from "./titlebar";
 import { initMenuBar, registerEditorFns } from "./menubar";
+import { checkForUpdate } from "./updater";
 import { listen } from "@tauri-apps/api/event";
 import {
   createTab,
@@ -230,6 +231,8 @@ img{max-width:100%}
     loadTabContent();
   });
 
+  ipc.onMenuCheckUpdates(() => checkForUpdate(false));
+
   ipc.onSetTheme((theme) => applyTheme(theme));
   ipc.onSetCustomCSS((css) => {
     const theme = loadSavedTheme();
@@ -290,6 +293,10 @@ img{max-width:100%}
     createTab();
   }
   loadTabContent();
+
+  window.setTimeout(() => {
+    void checkForUpdate(true);
+  }, 3000);
 }
 
 onTabSwitch((prev, next) => {

@@ -1,7 +1,7 @@
 {
   "name": "markzy",
   "private": true,
-  "version": "1.6.0",
+  "version": "1.7.0",
   "type": "module",
   "description": "The Agent Native Markdown Editor - Tauri rebuild",
   "author": "marswave.ai",
@@ -18,6 +18,8 @@
     "@tauri-apps/plugin-dialog": "^2",
     "@tauri-apps/plugin-fs": "^2",
     "@tauri-apps/plugin-opener": "^2",
+    "@tauri-apps/plugin-process": "^2",
+    "@tauri-apps/plugin-updater": "^2",
     "remark-breaks": "^4.0.0"
   },
   "devDependencies": {

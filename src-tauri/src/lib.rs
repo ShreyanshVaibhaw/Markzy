@@ -257,8 +257,17 @@ fn build_view_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> 
 #[allow(dead_code)]
 fn build_help_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> {
     let submenu = Submenu::new(app, "Help", true)?;
+    let check_updates = MenuItem::with_id(
+        app,
+        "menu-check-updates",
+        "Check for Updates...",
+        true,
+        None::<&str>,
+    )?;
+    let sep = PredefinedMenuItem::separator(app)?;
     let about = MenuItem::with_id(app, "menu-about", "About Markzy", true, None::<&str>)?;
-    submenu.append(&about)?;
+    let items: Vec<&dyn IsMenuItem<R>> = vec![&check_updates, &sep, &about];
+    submenu.append_items(&items)?;
     Ok(submenu)
 }
 
@@ -336,6 +345,7 @@ fn handle_menu_event<R: Runtime>(app: &AppHandle<R>, id: &str) {
         "menu-export-pdf" => emit_to_main(app, "menu-export-pdf"),
         "menu-export-html" => emit_to_main(app, "menu-export-html"),
         "menu-export-slides" => emit_to_main(app, "menu-export-slides"),
+        "menu-check-updates" => emit_to_main(app, "menu-check-updates"),
         "menu-close" => {
             if PLATFORM == Platform::Mac {
                 if let Some(window) = app.get_webview_window("main") {
@@ -438,6 +448,13 @@ pub fn run() {
             if let Some(icon) = _app.default_window_icon().cloned() {
                 let _ = window.set_icon(icon);
             }
+        }
+
+        #[cfg(desktop)]
+        {
+            let handle = _app.handle();
+            let _ = handle.plugin(tauri_plugin_process::init());
+            let _ = handle.plugin(tauri_plugin_updater::Builder::new().build());
         }
 
         Ok(())
