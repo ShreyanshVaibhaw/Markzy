@@ -144,5 +144,21 @@ export function getHTML(): string {
 
 export function setMarkdown(content: string): void {
   if (!editorInstance) return;
+  const scrollEl = document.getElementById("editor");
+  const scrollTop = scrollEl ? scrollEl.scrollTop : 0;
+  let wasFocused = false;
+  editorInstance.action((ctx) => {
+    const view = ctx.get(editorViewCtx);
+    const active = document.activeElement as Node | null;
+    wasFocused = active === view.dom || view.dom.contains(active);
+  });
   editorInstance.action(replaceAll(content));
+  if (scrollEl) scrollEl.scrollTop = scrollTop;
+  editorInstance.action((ctx) => {
+    const view = ctx.get(editorViewCtx);
+    const active = document.activeElement as HTMLElement | null;
+    if (!wasFocused && active && (active === view.dom || view.dom.contains(active))) {
+      active.blur();
+    }
+  });
 }

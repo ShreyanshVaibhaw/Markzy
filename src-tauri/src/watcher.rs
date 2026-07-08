@@ -1,5 +1,5 @@
 use std::path::PathBuf;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -8,6 +8,22 @@ use tauri::{AppHandle, Emitter};
 use tokio::sync::mpsc;
 
 use crate::commands::resolve_image_paths;
+
+const STATE_IDLE: u8 = 0;
+const STATE_ACTIVE: u8 = 1;
+const STATE_COOLDOWN: u8 = 2;
+
+fn set_agent_state(last: &AtomicU8, app: &AppHandle, new: u8) {
+    let prev = last.swap(new, Ordering::Relaxed);
+    if prev != new {
+        let name = match new {
+            STATE_ACTIVE => "active",
+            STATE_COOLDOWN => "cooldown",
+            _ => "idle",
+        };
+        let _ = app.emit("agent-activity", name);
+    }
+}
 
 pub struct WatcherState {
     pub file_path: Arc<Mutex<Option<String>>>,
@@ -51,7 +67,7 @@ pub fn start_watcher(app: &AppHandle, state: &WatcherState, path: &str) {
     let is_internal_save = Arc::clone(&state.is_internal_save);
 
     let handle = tauri::async_runtime::spawn(async move {
-        let target = match file_path_arc.lock().unwrap().as_ref() {
+        let target = match file_path_arc.lock().ok().and_then(|g| g.clone()) {
             Some(p) => PathBuf::from(p),
             None => return,
         };
@@ -84,8 +100,8 @@ pub fn start_watcher(app: &AppHandle, state: &WatcherState, path: &str) {
             return;
         }
 
+        let last_state = Arc::new(AtomicU8::new(STATE_IDLE));
         let mut timer_handle: Option<tauri::async_runtime::JoinHandle<()>> = None;
-        let is_active = Arc::new(AtomicBool::new(false));
 
         while rx.recv().await.is_some() {
             if is_internal_save.load(Ordering::Relaxed) {
@@ -94,29 +110,38 @@ pub fn start_watcher(app: &AppHandle, state: &WatcherState, path: &str) {
 
             let content = match std::fs::read_to_string(&target) {
                 Ok(c) => c,
-                Err(_) => continue,
+                Err(_) => {
+                    let mut content: Option<String> = None;
+                    for _ in 0..5 {
+                        tokio::time::sleep(Duration::from_millis(20)).await;
+                        if let Ok(c) = std::fs::read_to_string(&target) {
+                            content = Some(c);
+                            break;
+                        }
+                    }
+                    match content {
+                        Some(c) => c,
+                        None => continue,
+                    }
+                }
             };
 
             let resolved = resolve_image_paths(&content, &target);
             let _ = app_handle.emit("file-changed", &resolved);
 
-            if !is_active.load(Ordering::Relaxed) {
-                is_active.store(true, Ordering::Relaxed);
-                let _ = app_handle.emit("agent-activity", "active");
-            }
+            set_agent_state(&last_state, &app_handle, STATE_ACTIVE);
 
             if let Some(h) = timer_handle.take() {
                 h.abort();
             }
 
             let app_clone = app_handle.clone();
-            let active_clone = Arc::clone(&is_active);
+            let state_clone = Arc::clone(&last_state);
             timer_handle = Some(tauri::async_runtime::spawn(async move {
                 tokio::time::sleep(Duration::from_secs(3)).await;
-                let _ = app_clone.emit("agent-activity", "cooldown");
+                set_agent_state(&state_clone, &app_clone, STATE_COOLDOWN);
                 tokio::time::sleep(Duration::from_secs(2)).await;
-                let _ = app_clone.emit("agent-activity", "idle");
-                active_clone.store(false, Ordering::Relaxed);
+                set_agent_state(&state_clone, &app_clone, STATE_IDLE);
             }));
         }
 

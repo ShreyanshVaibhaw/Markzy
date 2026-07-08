@@ -24,6 +24,14 @@ pub struct ThemeResult {
     pub css: String,
 }
 
+fn is_markdown_ext(path: &Path) -> bool {
+    let ext = match path.extension().and_then(|e| e.to_str()) {
+        Some(e) => e.to_ascii_lowercase(),
+        None => return false,
+    };
+    matches!(ext.as_str(), "md" | "markdown" | "mdown" | "mkd")
+}
+
 pub fn resolve_image_paths(content: &str, file_path: &Path) -> String {
     let dir = match file_path.parent() {
         Some(d) => d,
@@ -37,19 +45,37 @@ pub fn resolve_image_paths(content: &str, file_path: &Path) -> String {
 
     re.replace_all(content, |caps: &regex::Captures| {
         let alt = &caps[1];
-        let src = &caps[2];
+        let raw_src = &caps[2];
 
-        if src.starts_with("http://")
-            || src.starts_with("https://")
-            || src.starts_with("file://")
-            || src.starts_with("data:")
+        let (url, title) = match raw_src.rsplit_once(' ') {
+            Some((u, t)) if t.starts_with('\"') && t.ends_with('\"') && t.len() >= 2 => {
+                (u.trim(), Some(t))
+            }
+            _ => (raw_src.trim(), None),
+        };
+
+        let url = url
+            .strip_prefix('<')
+            .and_then(|s| s.strip_suffix('>'))
+            .unwrap_or(url);
+
+        if url.starts_with("http://")
+            || url.starts_with("https://")
+            || url.starts_with("file://")
+            || url.starts_with("data:")
         {
-            format!("![{}]({})", alt, src)
+            match title {
+                Some(t) => format!("![{}]({} {})", alt, url, t),
+                None => format!("![{}]({})", alt, url),
+            }
         } else {
-            let abs = dir.join(src);
+            let abs = dir.join(url);
             let abs_str = abs.to_string_lossy().replace('\\', "/");
             let prefix = if abs_str.starts_with('/') { "" } else { "/" };
-            format!("![{}](file://{}{})", alt, prefix, abs_str)
+            match title {
+                Some(t) => format!("![{}](file://{}{} {})", alt, prefix, abs_str, t),
+                None => format!("![{}](file://{}{})", alt, prefix, abs_str),
+            }
         }
     })
     .to_string()
@@ -151,7 +177,7 @@ pub fn open_file_path(
     state: tauri::State<'_, WatcherState>,
 ) -> Result<Option<FileContent>, String> {
     let file_path = Path::new(&path);
-    if !file_path.exists() {
+    if !file_path.exists() || !is_markdown_ext(file_path) {
         return Ok(None);
     }
 

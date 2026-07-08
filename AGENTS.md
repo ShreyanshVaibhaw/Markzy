@@ -1,6 +1,6 @@
 # AGENTS.md - Instructions for AI agents working on Markzy
 
-> If you are an AI agent (Claude Code, Cursor, Copilot, Codex, etc.) touching this repository, read this file **first**, every session, before making any change. Then read `plan.md` if you are executing the build.
+> If you are an AI agent (Claude Code, Cursor, Copilot, Codex, etc.) touching this repository, read this file **first**, every session, before making any change. The original phase-by-phase build plan (`plan.md`) has been consumed; `docs/upstream-map.md` and `docs/parity-gaps.md` are now the governing references for behavior and divergences.
 
 ## What this project is
 
@@ -52,7 +52,7 @@ markzy/
     upstream-map.md           responsibility map + IPC contract (written in Phase 1)
     export.md                 export approach + future enhancements
     parity-gaps.md            any remaining behavioral differences vs upstream
-  plan.md                     phase-by-phase build plan (the source of truth for execution)
+  docs/parity-gaps.md            any remaining behavioral differences vs upstream
   AGENTS.md                   this file
   README.md
 ../ColaMD-upstream/           reference clone of the original Electron app (sibling dir, NOT part of this repo)
@@ -120,21 +120,19 @@ Do not "improve" the app by adding these. If asked, push back and reference this
 
 ## Git and commits
 
-- The repo is **not** a git repo by default. Do not `git init` unless the user asks.
+- The repo **is** a git repo. Do not reinitialize it. Do not commit unless the user explicitly says "commit".
 - Never commit unless the user explicitly says "commit". Never push unless explicitly asked.
 - Never add your agent name as a co-author in commit messages.
 - Never manually edit `CHANGELOG.md` or any file marked auto-generated.
 - When you do commit, write a concise message matching repo style, stage only intended files, and never stage secrets.
 
-## Workflow when executing `plan.md`
+## Workflow for implementation changes
 
-1. Read `plan.md` fully before starting.
-2. Execute phases **in order**, one at a time. Do not skip or merge phases.
-3. Each phase has a "Done when" checklist. Every box must be ticked before moving to the next phase.
-4. After each implementation phase, run the verification suite (`cargo fmt`, `cargo clippy -- -D warnings`, `npm run build`) and fix everything before marking done.
-5. Use the `check` skill after any non-trivial implementation phase.
-6. If a phase is blocked, stop and report. Do not guess around blockers.
-7. If you discover a divergence from upstream mid-build, record it in `docs/parity-gaps.md` rather than silently deviating.
+1. Read `docs/upstream-map.md` (behavioral contract) and `docs/parity-gaps.md` (documented divergences) before changing behavior.
+2. After any implementation change, run the verification suite (`cargo fmt`, `cargo clippy -- -D warnings`, `npm run build`) and fix everything until clean.
+3. Use the `check` skill after any non-trivial implementation phase.
+4. If a task is blocked, stop and report. Do not guess around blockers.
+5. If you discover a divergence from upstream mid-build, record it in `docs/parity-gaps.md` rather than silently deviating.
 
 ## Known parity gaps (v1, intentional)
 
@@ -146,5 +144,5 @@ Do not "improve" the app by adding these. If asked, push back and reference this
 - Tauri 2 docs: https://tauri.app/
 - Upstream ColaMD: https://github.com/marswaveai/ColaMD
 - Milkdown: https://milkdown.dev/
-- Build plan (execute in order): `plan.md`
 - Upstream responsibility map + IPC contract: `docs/upstream-map.md`
+- Parity gaps and Markzy-specific divergences: `docs/parity-gaps.md`

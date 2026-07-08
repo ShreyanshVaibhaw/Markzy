@@ -1,4 +1,3 @@
-use std::net::SocketAddr;
 use std::path::PathBuf;
 
 use axum::Router;
@@ -7,8 +6,10 @@ use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_opener::OpenerExt;
 use tower_http::services::ServeDir;
 
-const SLIDES_TEMPLATE_MD: &str = include_str!("../../src/themes-assets/slides/slides-template.md");
-const SLIDES_TEMPLATE_HTML: &str = include_str!("../../src/themes-assets/slides/template.html");
+pub(crate) const SLIDES_TEMPLATE_MD: &str =
+    include_str!("../../src/themes-assets/slides/slides-template.md");
+pub(crate) const SLIDES_TEMPLATE_HTML: &str =
+    include_str!("../../src/themes-assets/slides/template.html");
 
 fn get_current_file_path(state: &crate::watcher::WatcherState) -> Option<String> {
     state.file_path.lock().ok()?.as_ref().cloned()
@@ -90,8 +91,7 @@ pub async fn open_as_slides(
     let serve_dir = ServeDir::new(dir);
     let router = Router::new().nest_service("/", serve_dir);
 
-    let addr: SocketAddr = "127.0.0.1:0".parse().unwrap();
-    let listener = tokio::net::TcpListener::bind(addr)
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
         .await
         .map_err(|e| e.to_string())?;
 

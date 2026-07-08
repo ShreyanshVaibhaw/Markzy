@@ -1,8 +1,24 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { confirm } from "@tauri-apps/plugin-dialog";
 import type { MarkzyAPI } from "./ipc";
+import { hasDirtyTabs } from "./tabs";
 
 export function setupTitlebar(ipc: MarkzyAPI): void {
   const agentDot = document.getElementById("agent-dot");
+  const win = getCurrentWindow();
+  let closingConfirmed = false;
+  win.onCloseRequested(async (event) => {
+    if (closingConfirmed || !hasDirtyTabs()) return;
+    event.preventDefault();
+    const ok = await confirm("You have unsaved changes. Close anyway?", {
+      title: "Markzy",
+      kind: "warning",
+    });
+    if (ok) {
+      closingConfirmed = true;
+      await win.close();
+    }
+  });
   ipc.onAgentActivity((state) => {
     if (agentDot) agentDot.className = state === "idle" ? "" : state;
   });

@@ -183,6 +183,10 @@ export function isActiveTabSlides(): boolean {
   return getActiveTab()?.isSlides ?? false;
 }
 
+export function hasDirtyTabs(): boolean {
+  return tabs.some((t) => t.dirty);
+}
+
 export function hasTabs(): boolean {
   return tabs.length > 0;
 }

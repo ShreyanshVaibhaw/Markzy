@@ -23,7 +23,7 @@
         "decorations": false,
         "transparent": false,
         "center": true,
-        "additionalBrowserArgs": "--disable-gpu --disable-gpu-compositing --disable-gpu-sandbox --in-process-gpu --disable-extensions --disable-plugins --disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection,Translate,TranslateUI,OptimizationHints,OptimizationGuideModelDownloading,OptimizationHintsFetching,OptimizationTargetPrediction,BackgroundFetch,SiteIsolation,RendererCodeIntegrity,BackForwardCache,IsolateOrigins,site-per-process,GPURasterization,ContentSettingsSiteEngagement --no-pings --disable-background-networking --disable-component-update --disable-sync --disable-default-apps --disable-hang-monitor --disable-notifications --disable-renderer-backgrounding --disable-background-timer-throttling --disable-backgrounding-occluded-windows --no-zygote --disable-dev-shm-usage"
+        "additionalBrowserArgs": "--disable-gpu --disable-gpu-compositing --in-process-gpu --disable-extensions --disable-plugins --disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection,Translate,TranslateUI,OptimizationHints,OptimizationGuideModelDownloading,OptimizationHintsFetching,OptimizationTargetPrediction,BackgroundFetch,GPURasterization,ContentSettingsSiteEngagement,BackForwardCache --no-pings --disable-background-networking --disable-component-update --disable-sync --disable-default-apps --disable-hang-monitor --disable-notifications --disable-renderer-backgrounding --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-dev-shm-usage"
       }
     ],
     "security": {

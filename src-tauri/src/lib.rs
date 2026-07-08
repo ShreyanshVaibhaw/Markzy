@@ -12,6 +12,19 @@ use tauri::{AppHandle, Emitter, Manager, Runtime};
 use tauri_plugin_opener::OpenerExt;
 use watcher::WatcherState;
 
+const THEMES_MANIFEST: &str = include_str!("../../src/themes-assets/themes-manifest.json");
+
+#[derive(serde::Deserialize)]
+struct ThemeEntry {
+    id: String,
+    label: String,
+}
+
+#[derive(serde::Deserialize)]
+struct ThemesManifest {
+    themes: Vec<ThemeEntry>,
+}
+
 #[derive(Default)]
 pub struct StartupFiles {
     pub paths: Mutex<Option<Vec<String>>>,
@@ -58,26 +71,12 @@ fn emit_to_main_with_payload<R: Runtime, S: serde::Serialize + Clone>(
 fn build_theme_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> {
     let submenu = Submenu::new(app, "Theme", true)?;
 
-    let theme_names = [
-        ("theme-light", "Light"),
-        ("theme-dark", "Dark"),
-        ("theme-elegant", "Elegant"),
-        ("theme-newsprint", "Newsprint"),
-        ("theme-cappuccino", "Cappuccino"),
-        ("theme-nord", "Nord"),
-        ("theme-solarized-light", "Solarized Light"),
-        ("theme-solarized-dark", "Solarized Dark"),
-        ("theme-dracula", "Dracula"),
-        ("theme-github-dark", "GitHub Dark"),
-        ("theme-tokyo-night", "Tokyo Night"),
-        ("theme-gruvbox", "Gruvbox"),
-        ("theme-catppuccin-mocha", "Catppuccin Mocha"),
-        ("theme-one-dark", "One Dark"),
-    ];
+    let manifest: ThemesManifest =
+        serde_json::from_str(THEMES_MANIFEST).unwrap_or(ThemesManifest { themes: Vec::new() });
 
     let mut items: Vec<Box<dyn IsMenuItem<R>>> = Vec::new();
-    for (id, label) in theme_names {
-        let item = MenuItem::with_id(app, id, label, true, None::<&str>)?;
+    for theme in &manifest.themes {
+        let item = MenuItem::with_id(app, &theme.id, &theme.label, true, None::<&str>)?;
         items.push(Box::new(item));
     }
 
@@ -347,12 +346,8 @@ fn handle_menu_event<R: Runtime>(app: &AppHandle<R>, id: &str) {
         "menu-export-slides" => emit_to_main(app, "menu-export-slides"),
         "menu-check-updates" => emit_to_main(app, "menu-check-updates"),
         "menu-close" => {
-            if PLATFORM == Platform::Mac {
-                if let Some(window) = app.get_webview_window("main") {
-                    let _ = window.close();
-                }
-            } else {
-                app.exit(0);
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.close();
             }
         }
         "menu-about" => {
@@ -413,7 +408,6 @@ pub fn run() {
 
     builder = builder
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_opener::init())
         .manage(WatcherState::new())
         .manage(StartupFiles::default());

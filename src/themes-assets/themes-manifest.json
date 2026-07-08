@@ -1,0 +1,18 @@
+{
+  "themes": [
+    { "id": "theme-light", "label": "Light" },
+    { "id": "theme-dark", "label": "Dark" },
+    { "id": "theme-elegant", "label": "Elegant" },
+    { "id": "theme-newsprint", "label": "Newsprint" },
+    { "id": "theme-cappuccino", "label": "Cappuccino" },
+    { "id": "theme-nord", "label": "Nord" },
+    { "id": "theme-solarized-light", "label": "Solarized Light" },
+    { "id": "theme-solarized-dark", "label": "Solarized Dark" },
+    { "id": "theme-dracula", "label": "Dracula" },
+    { "id": "theme-github-dark", "label": "GitHub Dark" },
+    { "id": "theme-tokyo-night", "label": "Tokyo Night" },
+    { "id": "theme-gruvbox", "label": "Gruvbox" },
+    { "id": "theme-catppuccin-mocha", "label": "Catppuccin Mocha" },
+    { "id": "theme-one-dark", "label": "One Dark" }
+  ]
+}

@@ -113,8 +113,10 @@ pub fn export_slides(
     };
 
     let template_path = src_dir.join("template.html");
-    let mut html = std::fs::read_to_string(&template_path)
-        .map_err(|e| format!("Cannot read template.html: {}", e))?;
+    let mut html = match std::fs::read_to_string(&template_path) {
+        Ok(t) => t,
+        Err(_) => crate::slides::SLIDES_TEMPLATE_HTML.to_string(),
+    };
 
     let escaped = content.replace('`', "\\`").replace('$', "\\$");
     let fetch_re = Regex::new(r"fetch\('[^']+'\)\s*\n?\s*\.then\(r => r\.text\(\)\)")
