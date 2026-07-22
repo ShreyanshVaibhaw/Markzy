@@ -454,6 +454,7 @@ pub fn run() {
             commands::save_file_as,
             commands::open_external,
             commands::get_startup_files,
+            commands::get_current_file_path,
             export::export_pdf,
             export::export_html,
             export::export_slides,

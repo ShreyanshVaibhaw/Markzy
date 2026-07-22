@@ -26,6 +26,9 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      - name: Test unsaved changes flow
+        run: npm test
+
       - name: Build renderer (tsc + vite)
         run: npm run build
 

@@ -8,6 +8,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite",
+    "test": "tsc src/renderer/close-guard.ts src/renderer/tabs.ts --target ES2020 --module ES2020 --moduleResolution bundler --skipLibCheck --outDir node_modules/.cache/markzy-tests && node --test tests/unsaved-changes.test.mjs",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri"

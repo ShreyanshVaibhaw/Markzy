@@ -320,3 +320,14 @@ pub fn get_startup_files(state: tauri::State<'_, StartupFiles>) -> Vec<String> {
         .and_then(|mut guard| guard.take())
         .unwrap_or_default()
 }
+
+#[tauri::command]
+pub fn get_current_file_path(
+    state: tauri::State<'_, WatcherState>,
+) -> Result<Option<String>, String> {
+    state
+        .file_path
+        .lock()
+        .map(|path| path.clone())
+        .map_err(|e| e.to_string())
+}

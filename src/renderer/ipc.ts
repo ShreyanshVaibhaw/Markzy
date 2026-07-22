@@ -27,6 +27,7 @@ export interface MarkzyAPI {
   loadThemeCSS: (fileName: string) => Promise<string | null>;
   openExternal: (url: string) => void;
   getStartupFiles: () => Promise<string[]>;
+  getCurrentFilePath: () => Promise<string | null>;
   onFileChanged: (callback: (content: string) => void) => void;
   onNewFile: (callback: () => void) => void;
   onFileOpened: (callback: (data: FileContent) => void) => void;
@@ -46,8 +47,8 @@ export interface MarkzyAPI {
   onMenuCloseTab: (callback: () => void) => void;
   onMenuCheckUpdates: (callback: () => void) => void;
   onAgentActivity: (callback: (state: AgentState) => void) => void;
-  stopWatch: () => void;
-  watchFile: (path: string) => void;
+  stopWatch: () => Promise<void>;
+  watchFile: (path: string) => Promise<void>;
 }
 
 export const ipc: MarkzyAPI = {
@@ -66,6 +67,7 @@ export const ipc: MarkzyAPI = {
     invoke("open_external", { url });
   },
   getStartupFiles: () => invoke<string[]>("get_startup_files"),
+  getCurrentFilePath: () => invoke<string | null>("get_current_file_path"),
   onFileChanged: (callback) => {
     listen("file-changed", (event) => callback(event.payload as string));
   },
@@ -123,10 +125,6 @@ export const ipc: MarkzyAPI = {
   onMenuCheckUpdates: (callback) => {
     listen("menu-check-updates", () => callback());
   },
-  stopWatch: () => {
-    invoke("stop_watch");
-  },
-  watchFile: (path: string) => {
-    invoke("watch_file", { path });
-  },
+  stopWatch: () => invoke<void>("stop_watch"),
+  watchFile: (path: string) => invoke<void>("watch_file", { path }),
 };

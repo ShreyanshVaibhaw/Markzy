@@ -3,6 +3,7 @@ export interface Tab {
   filePath: string | null;
   title: string;
   content: string;
+  savedContent: string;
   isSlides: boolean;
   dirty: boolean;
 }
@@ -11,9 +12,14 @@ let tabs: Tab[] = [];
 let activeTabId: string = "";
 let tabCounter = 0;
 let tabSwitchCallbacks: Array<(prev: Tab | null, next: Tab) => void> = [];
+let tabCloseHandler: ((tabId: string) => void | Promise<void>) | null = null;
 
 export function onTabSwitch(cb: (prev: Tab | null, next: Tab) => void): void {
   tabSwitchCallbacks.push(cb);
+}
+
+export function onTabCloseRequest(handler: (tabId: string) => void | Promise<void>): void {
+  tabCloseHandler = handler;
 }
 
 const TAB_BAR_ID = "tab-bar";
@@ -38,7 +44,7 @@ function renderTabBar(): void {
     closeBtn.textContent = "\u00d7";
     closeBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      closeTab(tab.id);
+      if (tabCloseHandler) void tabCloseHandler(tab.id);
     });
 
     el.appendChild(closeBtn);
@@ -59,13 +65,15 @@ function renderTabBar(): void {
 
 export function createTab(filePath?: string | null, content?: string, isSlides?: boolean): Tab {
   const prevTab = getActiveTab();
+  const initialContent = content ?? "";
   const tab: Tab = {
     id: generateTabId(),
     filePath: filePath ?? null,
     title: filePath ? filePath.split(/[/\\]/).pop() || "Untitled" : "Untitled",
-    content: content ?? "",
+    content: initialContent,
+    savedContent: filePath ? initialContent : "",
     isSlides: isSlides ?? false,
-    dirty: false,
+    dirty: !filePath && initialContent !== "",
   };
   tabs.push(tab);
   activeTabId = tab.id;
@@ -81,6 +89,7 @@ export function closeTab(tabId: string): void {
     tabs[0].content = "";
     tabs[0].filePath = null;
     tabs[0].title = "Untitled";
+    tabs[0].savedContent = "";
     tabs[0].dirty = false;
     tabs[0].isSlides = false;
     activeTabId = tabs[0].id;
@@ -91,18 +100,19 @@ export function closeTab(tabId: string): void {
   const idx = tabs.findIndex((t) => t.id === tabId);
   if (idx === -1) return;
 
+  const oldTab = tabs[idx];
+  const wasActive = activeTabId === tabId;
   tabs.splice(idx, 1);
 
-  if (activeTabId === tabId) {
+  if (wasActive) {
     const newIdx = Math.min(idx, tabs.length - 1);
     activeTabId = tabs[newIdx].id;
   }
 
   renderTabBar();
 
-  if (activeTabId !== tabId) {
+  if (wasActive) {
     const newActive = getActiveTab();
-    const oldTab = tabs.find((t) => t.id === tabId) ?? null;
     if (newActive) {
       for (const cb of tabSwitchCallbacks) {
         cb(oldTab, newActive);
@@ -129,12 +139,33 @@ export function getActiveTab(): Tab | null {
   return tabs.find((t) => t.id === activeTabId) ?? null;
 }
 
+export function getTabById(tabId: string): Tab | null {
+  return tabs.find((t) => t.id === tabId) ?? null;
+}
+
+export function updateActiveTabContent(content: string): void {
+  const tab = getActiveTab();
+  if (!tab) return;
+  const wasDirty = tab.dirty;
+  tab.content = content;
+  tab.dirty = content !== tab.savedContent;
+  if (tab.dirty !== wasDirty) renderTabBar();
+}
+
+export function replaceActiveTabContent(content: string): void {
+  const tab = getActiveTab();
+  if (!tab) return;
+  tab.content = content;
+  tab.savedContent = content;
+  tab.dirty = false;
+  renderTabBar();
+}
+
 export function updateActiveTabFilePath(path: string): void {
   const tab = getActiveTab();
   if (tab) {
     tab.filePath = path;
     tab.title = path.split(/[/\\]/).pop() || "Untitled";
-    tab.dirty = false;
     renderTabBar();
   }
 }
@@ -142,14 +173,7 @@ export function updateActiveTabFilePath(path: string): void {
 export function markActiveTabClean(): void {
   const tab = getActiveTab();
   if (tab) {
-    tab.dirty = false;
-    renderTabBar();
-  }
-}
-
-export function markTabClean(tabId: string): void {
-  const tab = tabs.find((t) => t.id === tabId);
-  if (tab) {
+    tab.savedContent = tab.content;
     tab.dirty = false;
     renderTabBar();
   }
@@ -166,8 +190,8 @@ export function getActiveTabContent(): string {
   return getActiveTab()?.content ?? "";
 }
 
-export function hasDirtyTabs(): boolean {
-  return tabs.some((t) => t.dirty);
+export function getDirtyTabs(): Tab[] {
+  return tabs.filter((tab) => tab.dirty);
 }
 
 export function hasTabs(): boolean {

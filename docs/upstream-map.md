@@ -50,6 +50,9 @@ The renderer calls `window.electronAPI.*`. In Tauri, `src/renderer/ipc.ts` must 
 | `loadThemeCSS(fileName)` | `fileName: string` | `string \| null` | `load_theme_css` | Read CSS from `~/.markzy/themes/{fileName}`. |
 | `getPathForFile(file)` | `file: File` | `string` | **not needed** | Tauri drop events provide paths directly; no `File` object path resolution needed. |
 | `openExternal(url)` | `url: string` | `void` | `open_external` | Validate http(s). Uses `tauri-plugin-opener`. |
+| `getCurrentFilePath()` | none | `string \| null` | `get_current_file_path` | Markzy tabs helper used to associate an untitled tab after Save As. |
+| `watchFile(path)` | `path: string` | `void` | `watch_file` | Markzy tabs helper; switches the watcher before saving a background tab. |
+| `stopWatch()` | none | `void` | `stop_watch` | Markzy tabs helper; clears the active watcher before switching tabs. |
 
 ### Events (Rust -> renderer, via `listen`)
 
@@ -88,6 +91,9 @@ export interface MarkzyAPI {
   loadCustomTheme: () => Promise<{ name: string; css: string } | null>;
   loadThemeCSS: (fileName: string) => Promise<string | null>;
   openExternal: (url: string) => void;
+  getCurrentFilePath: () => Promise<string | null>;
+  watchFile: (path: string) => Promise<void>;
+  stopWatch: () => Promise<void>;
   onFileChanged: (callback: (content: string) => void) => void;
   onNewFile: (callback: () => void) => void;
   onFileOpened: (callback: (data: { path: string; content: string }) => void) => void;

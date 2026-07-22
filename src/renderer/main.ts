@@ -6,20 +6,27 @@ import { setupTitlebar } from "./titlebar";
 import { initMenuBar, registerEditorFns } from "./menubar";
 import { checkForUpdate } from "./updater";
 import { listen } from "@tauri-apps/api/event";
+import { message } from "@tauri-apps/plugin-dialog";
+import { resolveUnsavedChanges, type CloseChoice } from "./close-guard";
 import {
   createTab,
   closeTab,
   switchToTab,
   getActiveTab,
+  getTabById,
   updateActiveTabFilePath,
+  updateActiveTabContent,
+  replaceActiveTabContent,
   markActiveTabClean,
-  markTabClean,
   setActiveTabSlides,
   getActiveTabContent,
   ensureTab,
   getTabForPath,
   hasTabs,
+  getDirtyTabs,
   onTabSwitch,
+  onTabCloseRequest,
+  type Tab,
 } from "./tabs";
 import "./themes/base.css";
 
@@ -67,13 +74,8 @@ function getContent(): string {
 function saveActiveTabState(): void {
   const tab = getActiveTab();
   if (!tab) return;
-  if (sourceModeActive) {
-    tab.content = sourceEl().value;
-  } else {
-    tab.content = getMarkdown();
-    tab.dirty = true;
-  }
-  tab.isSlides = sourceModeActive;
+  updateActiveTabContent(getContent());
+  setActiveTabSlides(sourceModeActive);
 }
 
 function loadTabContent(): void {
@@ -88,7 +90,6 @@ function loadTabContent(): void {
 }
 
 async function openPathsAsTabs(paths: string[]): Promise<void> {
-  const createdIds: string[] = [];
   for (const filePath of paths) {
     const existing = getTabForPath(filePath);
     if (existing) {
@@ -97,12 +98,70 @@ async function openPathsAsTabs(paths: string[]): Promise<void> {
     }
     const result = await ipc.openFilePath(filePath);
     if (!result) continue;
-    const tab = createTab(result.path, result.content);
-    createdIds.push(tab.id);
+    createTab(result.path, result.content);
   }
-  for (const id of createdIds) {
-    markTabClean(id);
+}
+
+async function saveActiveTab(saveAs = false): Promise<boolean> {
+  saveActiveTabState();
+  const content = getActiveTabContent();
+  const ok = saveAs ? await ipc.saveFileAs(content) : await ipc.saveFile(content);
+  if (!ok) return false;
+  const path = await ipc.getCurrentFilePath();
+  if (path) updateActiveTabFilePath(path);
+  markActiveTabClean();
+  return true;
+}
+
+async function chooseCloseAction(tab: Tab): Promise<CloseChoice> {
+  const result = await message(`Save changes to "${tab.title}" before closing?`, {
+    title: "Markzy",
+    kind: "warning",
+    buttons: { yes: "Save", no: "Don't Save", cancel: "Cancel" },
+  });
+  if (result === "Save") return "Save";
+  if (result === "Don't Save") return "Don't Save";
+  if (result === "Cancel") return "Cancel";
+  return "Cancel";
+}
+
+async function saveTabBeforeClose(tab: Tab): Promise<boolean> {
+  switchToTab(tab.id);
+  await ipc.stopWatch();
+  if (tab.filePath) await ipc.watchFile(tab.filePath);
+  return saveActiveTab();
+}
+
+async function confirmTabsClose(tabs: readonly Tab[]): Promise<boolean> {
+  try {
+    return await resolveUnsavedChanges(tabs, chooseCloseAction, saveTabBeforeClose);
+  } catch (error) {
+    console.error("Could not save changes:", error);
+    try {
+      await message("Could not save changes. The document will remain open.", {
+        title: "Markzy",
+        kind: "error",
+        buttons: { ok: "OK" },
+      });
+    } catch {
+      return false;
+    }
+    return false;
   }
+}
+
+async function confirmWindowClose(): Promise<boolean> {
+  saveActiveTabState();
+  return confirmTabsClose(getDirtyTabs());
+}
+
+async function requestCloseTab(tabId: string): Promise<void> {
+  const tab = getTabById(tabId);
+  if (!tab) return;
+  if (getActiveTab()?.id === tabId) saveActiveTabState();
+  if (tab.dirty && !(await confirmTabsClose([tab]))) return;
+  closeTab(tabId);
+  loadTabContent();
 }
 
 async function init(): Promise<void> {
@@ -115,7 +174,8 @@ async function init(): Promise<void> {
     if (css) applyTheme(savedTheme, css);
   }
 
-  await createEditor("editor");
+  await createEditor("editor", updateActiveTabContent);
+  sourceEl().addEventListener("input", () => updateActiveTabContent(sourceEl().value));
 
   slidesBtnEl().addEventListener("click", () => ipc.openAsSlides(getContent()));
 
@@ -126,6 +186,7 @@ async function init(): Promise<void> {
     const tab = getActiveTab();
     if (tab && !tab.filePath && !tab.dirty && tab.content === "") {
       updateActiveTabFilePath(result.path);
+      replaceActiveTabContent(result.content);
       setContent(result.content);
     } else {
       createTab(result.path, result.content);
@@ -133,19 +194,9 @@ async function init(): Promise<void> {
     }
   });
 
-  ipc.onMenuSave(async () => {
-    saveActiveTabState();
-    const content = getActiveTabContent();
-    const ok = await ipc.saveFile(content);
-    if (ok) markActiveTabClean();
-  });
+  ipc.onMenuSave(() => saveActiveTab());
 
-  ipc.onMenuSaveAs(async () => {
-    saveActiveTabState();
-    const content = getActiveTabContent();
-    const ok = await ipc.saveFileAs(content);
-    if (ok) markActiveTabClean();
-  });
+  ipc.onMenuSaveAs(() => saveActiveTab(true));
 
   ipc.onMenuExportPDF(() => ipc.exportPDF());
   ipc.onMenuExportHTML(() => {
@@ -159,23 +210,17 @@ async function init(): Promise<void> {
     setMarkdown("");
   });
 
-  ipc.onMenuCloseTab(() => {
-    saveActiveTabState();
-    closeTab(ensureTab().id);
-    loadTabContent();
-  });
+  ipc.onMenuCloseTab(() => requestCloseTab(ensureTab().id));
 
   ipc.onFileOpened((data) => {
     updateActiveTabFilePath(data.path);
+    replaceActiveTabContent(data.content);
     setContent(data.content);
   });
 
   ipc.onFileChanged((content) => {
-    if (sourceModeActive) {
-      sourceEl().value = content;
-    } else {
-      setMarkdown(content);
-    }
+    replaceActiveTabContent(content);
+    setContent(content);
   });
 
   ipc.onOpenFilesExternal(async (paths) => {
@@ -217,7 +262,7 @@ async function init(): Promise<void> {
     if (result) applyTheme(`custom:${result.name}`, result.css);
   });
 
-  setupTitlebar(ipc);
+  setupTitlebar(ipc, confirmWindowClose);
 
   listen<{ paths: string[] } | null>("tauri://drag-drop", async (event) => {
     const paths = event.payload?.paths;
@@ -253,23 +298,16 @@ async function init(): Promise<void> {
 }
 
 onTabSwitch((prev, next) => {
-  if (prev && prev.id !== next.id) {
-    if (sourceModeActive) {
-      prev.content = sourceEl().value;
-    } else {
-      prev.content = getMarkdown();
-      prev.dirty = true;
-    }
-    prev.isSlides = sourceModeActive;
-  }
   loadTabContent();
   if (prev?.filePath) {
-    ipc.stopWatch();
+    void ipc.stopWatch();
   }
   if (next.filePath) {
-    ipc.watchFile(next.filePath);
+    void ipc.watchFile(next.filePath);
   }
 });
+
+onTabCloseRequest(requestCloseTab);
 
 initMenuBar();
 registerEditorFns({
@@ -277,6 +315,7 @@ registerEditorFns({
   saveTabState: saveActiveTabState,
   exitSourceMode,
   loadTabContent,
+  closeActiveTab: () => requestCloseTab(ensureTab().id),
 });
 
 init().catch((e) => console.error("Markzy init failed:", e));

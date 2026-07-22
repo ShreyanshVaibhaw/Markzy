@@ -4,6 +4,7 @@ import remarkBreaks from "remark-breaks";
 import { commonmark, headingIdGenerator } from "@milkdown/kit/preset/commonmark";
 import { gfm } from "@milkdown/kit/preset/gfm";
 import { history } from "@milkdown/kit/plugin/history";
+import { listener, listenerCtx } from "@milkdown/kit/plugin/listener";
 import { clipboard } from "@milkdown/kit/plugin/clipboard";
 import { replaceAll } from "@milkdown/kit/utils";
 import { htmlView } from "./html-view";
@@ -57,7 +58,10 @@ function enhanceClipboard(e: ClipboardEvent): void {
 
 const defaultContent = `# Welcome to Markzy\n\nStart typing here...\n`;
 
-export async function createEditor(rootId: string): Promise<Editor> {
+export async function createEditor(
+  rootId: string,
+  onChange?: (markdown: string) => void,
+): Promise<Editor> {
   const root = document.getElementById(rootId);
   if (!root) throw new Error(`Element #${rootId} not found`);
 
@@ -73,10 +77,14 @@ export async function createEditor(rootId: string): Promise<Editor> {
           .replace(/[^\w\s-]/g, "")
           .replace(/\s+/g, "-");
       });
+      if (onChange) {
+        ctx.get(listenerCtx).markdownUpdated((_ctx, markdown) => onChange(markdown));
+      }
     })
     .use(commonmark)
     .use(gfm)
     .use(history)
+    .use(listener)
     .use(clipboard)
     .use(htmlView)
     .create();

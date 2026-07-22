@@ -5,12 +5,11 @@ import { checkForUpdate } from "./updater";
 import themeManifest from "../themes-assets/themes-manifest.json";
 import {
   createTab,
-  closeTab,
   getActiveTab,
   updateActiveTabFilePath,
+  replaceActiveTabContent,
   markActiveTabClean,
   getActiveTabContent,
-  ensureTab,
 } from "./tabs";
 
 const isMac = /Mac/i.test(navigator.userAgent);
@@ -19,17 +18,20 @@ let setContentFn: ((content: string) => void) | null = null;
 let saveTabStateFn: (() => void) | null = null;
 let exitSourceModeFn: (() => void) | null = null;
 let loadTabContentFn: (() => void) | null = null;
+let closeActiveTabFn: (() => void | Promise<void>) | null = null;
 
 export function registerEditorFns(fns: {
   setContent: (content: string) => void;
   saveTabState: () => void;
   exitSourceMode: () => void;
   loadTabContent: () => void;
+  closeActiveTab: () => void | Promise<void>;
 }): void {
   setContentFn = fns.setContent;
   saveTabStateFn = fns.saveTabState;
   exitSourceModeFn = fns.exitSourceMode;
   loadTabContentFn = fns.loadTabContent;
+  closeActiveTabFn = fns.closeActiveTab;
 }
 
 async function handleOpenFile(): Promise<void> {
@@ -38,6 +40,7 @@ async function handleOpenFile(): Promise<void> {
   const tab = getActiveTab();
   if (tab && !tab.filePath && !tab.dirty && tab.content === "") {
     updateActiveTabFilePath(result.path);
+    replaceActiveTabContent(result.content);
     setContentFn?.(result.content);
   } else {
     createTab(result.path, result.content);
@@ -49,14 +52,22 @@ async function handleSaveFile(): Promise<void> {
   saveTabStateFn?.();
   const content = getActiveTabContent();
   const ok = await ipc.saveFile(content);
-  if (ok) markActiveTabClean();
+  if (ok) {
+    const path = await ipc.getCurrentFilePath();
+    if (path) updateActiveTabFilePath(path);
+    markActiveTabClean();
+  }
 }
 
 async function handleSaveFileAs(): Promise<void> {
   saveTabStateFn?.();
   const content = getActiveTabContent();
   const ok = await ipc.saveFileAs(content);
-  if (ok) markActiveTabClean();
+  if (ok) {
+    const path = await ipc.getCurrentFilePath();
+    if (path) updateActiveTabFilePath(path);
+    markActiveTabClean();
+  }
 }
 
 function handleNewFile(): void {
@@ -66,9 +77,7 @@ function handleNewFile(): void {
 }
 
 function handleCloseTab(): void {
-  saveTabStateFn?.();
-  closeTab(ensureTab().id);
-  loadTabContentFn?.();
+  if (closeActiveTabFn) void closeActiveTabFn();
 }
 
 async function handleNewSlides(): Promise<void> {
