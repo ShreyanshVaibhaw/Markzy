@@ -103,7 +103,7 @@ function getThemeItems(): Array<{ label: string; separator?: boolean; action?: (
       action: () => applyTheme(t.id.replace(/^theme-/, "")),
     }),
   );
-  items.push({ label: "", separator: true, action: () => {} });
+  items.push({ label: "", separator: true });
   items.push({ label: "Import Theme...", action: () => handleImportTheme() });
   return items;
 }
@@ -202,7 +202,7 @@ export function initMenuBar(): void {
         const themeItems = getThemeItems();
         themeItems.forEach((t) => {
           items.push(t.separator
-            ? { label: "", separator: true, action: () => {} }
+            ? { label: "", separator: true }
             : { label: t.label, action: t.action });
         });
         break;

@@ -30,14 +30,6 @@ pub struct StartupFiles {
     pub paths: Mutex<Option<Vec<String>>>,
 }
 
-fn is_markdown_path(p: &str) -> bool {
-    let ext = match Path::new(p).extension().and_then(|e| e.to_str()) {
-        Some(e) => e.to_ascii_lowercase(),
-        None => return false,
-    };
-    matches!(ext.as_str(), "md" | "markdown" | "mdown" | "mkd")
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Platform {
     Mac,
@@ -397,7 +389,7 @@ pub fn run() {
             let paths: Vec<String> = argv
                 .into_iter()
                 .skip(1)
-                .filter(|p| is_markdown_path(p) && Path::new(p).exists())
+                .filter(|p| commands::is_markdown_path(Path::new(p)) && Path::new(p).exists())
                 .collect();
 
             if !paths.is_empty() {
@@ -428,7 +420,7 @@ pub fn run() {
 
         let startup_paths: Vec<String> = std::env::args()
             .skip(1)
-            .filter(|p| is_markdown_path(p) && Path::new(p).exists())
+            .filter(|p| commands::is_markdown_path(Path::new(p)) && Path::new(p).exists())
             .collect();
         if !startup_paths.is_empty() {
             let state = _app.state::<StartupFiles>();

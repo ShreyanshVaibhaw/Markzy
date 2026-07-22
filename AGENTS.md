@@ -16,8 +16,7 @@ This is a **port**, not a redesign. Feature parity with upstream v1.5.0 is the g
 - **Backend:** Rust, edition 2021. Modules: `main.rs`, `commands.rs`, `watcher.rs`, `slides.rs`, `export.rs`, `theme.rs`.
 - **Renderer:** TypeScript + Vite, reusing the upstream Milkdown WYSIWYG editor (`@milkdown/kit`), `remark-breaks`, themes CSS, and slides HTML templates.
 - **IPC:** `@tauri-apps/api` `invoke()` + `listen()`. There is **no preload script** (that was Electron-specific).
-- **Markdown parsing (Rust):** `pulldown-cmark`.
-- **File watching:** `notify` + `notify-debouncer-mini`, ~200ms debounce.
+- **File watching:** `notify` + `notify-debouncer-mini`, 100ms debounce.
 - **Slides server:** `axum` on `127.0.0.1` (loopback only, never external).
 - **PDF export (v1):** webview print dialog (Save as PDF). Headless PDF is a documented future enhancement, not a current goal.
 
@@ -30,7 +29,7 @@ markzy/
       main.rs                 Tauri init, plugin registration, invoke_handler
       commands.rs             file open/save/new/read/write + IPC commands
       watcher.rs              notify watcher + agent activity state machine (CORE FEATURE)
-      slides.rs               pulldown-cmark slide parser + axum slides server
+      slides.rs               bundled slides template + axum slides server
       export.rs               HTML / PDF / slides export
       theme.rs                built-in + user themes, persistence
     Cargo.toml

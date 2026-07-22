@@ -24,7 +24,7 @@ pub struct ThemeResult {
     pub css: String,
 }
 
-fn is_markdown_ext(path: &Path) -> bool {
+pub(crate) fn is_markdown_path(path: &Path) -> bool {
     let ext = match path.extension().and_then(|e| e.to_str()) {
         Some(e) => e.to_ascii_lowercase(),
         None => return false,
@@ -177,7 +177,7 @@ pub fn open_file_path(
     state: tauri::State<'_, WatcherState>,
 ) -> Result<Option<FileContent>, String> {
     let file_path = Path::new(&path);
-    if !file_path.exists() || !is_markdown_ext(file_path) {
+    if !file_path.exists() || !is_markdown_path(file_path) {
         return Ok(None);
     }
 

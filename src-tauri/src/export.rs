@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use base64::Engine;
 use regex::Regex;
-use tauri::{AppHandle, Emitter, Manager};
+use tauri::{AppHandle, Manager};
 use tauri_plugin_dialog::DialogExt;
 
 use crate::watcher::WatcherState;
@@ -169,10 +169,6 @@ pub fn export_slides(
     }
 
     std::fs::write(&dest_html, &html).map_err(|e| e.to_string())?;
-
-    if let Some(window) = app.get_webview_window("main") {
-        let _ = window.emit("export-complete", ());
-    }
 
     Ok(true)
 }

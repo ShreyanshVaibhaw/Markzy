@@ -111,31 +111,22 @@ export function closeTab(tabId: string): void {
   }
 }
 
-export function switchToTab(tabId: string): [Tab | null, Tab] {
+export function switchToTab(tabId: string): void {
   const prevTab = getActiveTab();
-  if (prevTab && prevTab.id === tabId) return [null, prevTab];
+  if (prevTab && prevTab.id === tabId) return;
 
   const nextTab = tabs.find((t) => t.id === tabId);
-  if (!nextTab) return [prevTab, prevTab ?? tabs[0]];
+  if (!nextTab) return;
 
   activeTabId = tabId;
   renderTabBar();
   for (const cb of tabSwitchCallbacks) {
     cb(prevTab, nextTab);
   }
-  return [prevTab, nextTab];
 }
 
 export function getActiveTab(): Tab | null {
   return tabs.find((t) => t.id === activeTabId) ?? null;
-}
-
-export function updateActiveTabContent(content: string): void {
-  const tab = getActiveTab();
-  if (tab) {
-    tab.content = content;
-    tab.dirty = true;
-  }
 }
 
 export function updateActiveTabFilePath(path: string): void {
@@ -173,14 +164,6 @@ export function setActiveTabSlides(isSlides: boolean): void {
 
 export function getActiveTabContent(): string {
   return getActiveTab()?.content ?? "";
-}
-
-export function getActiveTabFilePath(): string | null {
-  return getActiveTab()?.filePath ?? null;
-}
-
-export function isActiveTabSlides(): boolean {
-  return getActiveTab()?.isSlides ?? false;
 }
 
 export function hasDirtyTabs(): boolean {

@@ -46,7 +46,6 @@ pub fn load_custom_theme(app: AppHandle) -> Result<Option<ThemeResult>, String> 
 }
 
 #[tauri::command]
-#[allow(unused_variables)]
 pub fn load_theme_css(file_name: String) -> Result<Option<String>, String> {
     let path = themes_dir()?.join(&file_name);
     if !path.exists() {

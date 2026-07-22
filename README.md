@@ -13,7 +13,6 @@ The original ColaMD is built on Electron (~200MB+ RAM, ~150MB installers). Markz
 | Metric | Electron (upstream ColaMD) | Markzy (Tauri) | Improvement |
 |---|---|---|---|
 | RAM usage | ~200MB+ | ~30MB | ~7x less |
-| MSI installer | ~150MB | 4.38MB | ~34x smaller |
 | NSIS installer | ~150MB | 2.88MB | ~52x smaller |
 | Executable | N/A | 13.45MB | - |
 | Cold start | Slower | Instant | - |
@@ -22,7 +21,6 @@ The original ColaMD is built on Electron (~200MB+ RAM, ~150MB installers). Markz
 
 - **Shell:** Tauri 2 (Rust backend + native webview)
 - **Renderer:** TypeScript + Vite, reusing the upstream Milkdown editor
-- **Markdown parsing:** pulldown-cmark (Rust)
 - **File watching:** notify crate
 - **Slides server:** axum (loopback only)
 
@@ -33,7 +31,7 @@ The original ColaMD is built on Electron (~200MB+ RAM, ~150MB installers). Markz
 - **WYSIWYG Markdown** - Milkdown editor, no split-pane preview
 - **Smart Line Breaks** - Single newlines render as line breaks
 - **Rich Text Copy** - Paste into WeChat/email with formatting preserved
-- **Themes** - 4 built-in themes + custom CSS import
+- **Themes** - 14 built-in themes + custom CSS import
 - **Slides** - Markdown as Database: turn `.md` into slide decks
 - **Export** - PDF (print dialog) and HTML (self-contained)
 - **Slides Export** - Single HTML with inlined images, or folder with videos
@@ -54,18 +52,18 @@ npm run tauri dev
 npm run tauri build
 ```
 
-Produces MSI and NSIS installers in `src-tauri/target/release/bundle/`.
+Produces desktop installers in `src-tauri/target/release/bundle/`.
 
 ## Differences from upstream Electron build
 
 - **Memory:** ~30MB RAM vs ~200MB+ (7x reduction)
-- **Installer size:** 4.38MB MSI / 2.88MB NSIS vs ~150MB (34-52x reduction)
+- **Installer size:** 2.88MB NSIS vs ~150MB (52x reduction)
 - **PDF export:** Uses the OS print dialog ("Save as PDF") rather than silent `printToPDF`. See `docs/export.md`.
-- **Multi-window:** v1 uses single window; upstream supports multiple windows. See `docs/parity-gaps.md`.
+- **Documents:** Markzy uses in-window tabs; upstream uses multiple windows. See `docs/parity-gaps.md`.
 
 ## Project structure
 
-See `AGENTS.md` for the full repository layout, coding conventions, and the core feature spec. See `plan.md` for the phase-by-phase build plan.
+See `AGENTS.md` for the full repository layout, coding conventions, and the core feature spec.
 
 ## License
 

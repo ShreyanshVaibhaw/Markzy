@@ -1,19 +1,8 @@
-const themes: Record<string, string> = {
-  light: "theme-light",
-  dark: "theme-dark",
-  elegant: "theme-elegant",
-  newsprint: "theme-newsprint",
-  cappuccino: "theme-cappuccino",
-  nord: "theme-nord",
-  "solarized-light": "theme-solarized-light",
-  "solarized-dark": "theme-solarized-dark",
-  dracula: "theme-dracula",
-  "github-dark": "theme-github-dark",
-  "tokyo-night": "theme-tokyo-night",
-  gruvbox: "theme-gruvbox",
-  "catppuccin-mocha": "theme-catppuccin-mocha",
-  "one-dark": "theme-one-dark",
-};
+import themeManifest from "../../themes-assets/themes-manifest.json";
+
+const themes: Record<string, string> = Object.fromEntries(
+  themeManifest.themes.map(({ id }) => [id.replace(/^theme-/, ""), id]),
+);
 
 let customStyleEl: HTMLStyleElement | null = null;
 
