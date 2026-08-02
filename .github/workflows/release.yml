@@ -34,5 +34,6 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: "Markzy ${{ github.ref_name }}"
+          generateReleaseNotes: true
           releaseDraft: false
           updaterJsonPreferNsis: true

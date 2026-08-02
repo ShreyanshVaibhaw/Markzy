@@ -58,12 +58,14 @@ function exitSourceMode(): void {
 }
 
 function setContent(content: string): void {
+  const wasDirty = getActiveTab()?.dirty ?? false;
   if (isSlidesContent(content)) {
     enterSourceMode(content);
   } else {
     exitSourceMode();
     setMarkdown(content);
   }
+  if (!wasDirty) replaceActiveTabContent(getContent());
 }
 
 function getContent(): string {
@@ -81,12 +83,14 @@ function saveActiveTabState(): void {
 function loadTabContent(): void {
   const tab = getActiveTab();
   if (!tab) return;
+  const wasDirty = tab.dirty;
   if (tab.isSlides) {
     enterSourceMode(tab.content);
   } else {
     exitSourceMode();
     setMarkdown(tab.content);
   }
+  if (!wasDirty) replaceActiveTabContent(getContent());
 }
 
 async function openPathsAsTabs(paths: string[]): Promise<void> {
